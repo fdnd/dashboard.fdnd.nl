@@ -1,5 +1,6 @@
 <script>
   let { data } = $props()
+
   let { org, repos } = data
 </script>
 

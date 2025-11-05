@@ -8,7 +8,7 @@
 </script>
 
 <main>
-  <a href="/repos">← Back to Repos</a>
+  <a href="/">← Back to Repos</a>
   <h1>{repo}</h1>
 
   <!-- Total commits per member -->
