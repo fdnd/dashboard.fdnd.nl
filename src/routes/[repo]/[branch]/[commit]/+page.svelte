@@ -5,6 +5,8 @@
 
 <main>
   <a href={`/${repo}`}>← Back to {repo}</a>
+  
+  {#if details}
   <h1>Commit {sha.slice(0, 7)}</h1>
 
   <section>
@@ -25,4 +27,7 @@
       </li>
     {/each}
   </ul>
+  {:else}
+    <p>Commit details unavailable (possibly deleted or invalid)</p>
+  {/if}
 </main>
