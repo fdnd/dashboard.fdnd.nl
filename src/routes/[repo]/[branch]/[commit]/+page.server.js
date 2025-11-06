@@ -1,7 +1,7 @@
 import { GITHUB_ORGANIZATION, GITHUB_TOKEN } from '$env/static/private';
 import { fetchCommitDetails } from '$lib/github';
 
-export const prerender = true; // keep static
+export const prerender = false;
 
 export async function load({ params }) {
   const org = GITHUB_ORGANIZATION;
