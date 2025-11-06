@@ -8,7 +8,7 @@
 </script>
 
 <main>
-  <a href="/">← Back to Repos</a>
+  <a href="/">← Back to active repos</a>
   <h1>{repo}</h1>
 
   <!-- Total commits per member -->
@@ -33,7 +33,7 @@
   {:else}
     {#each branches as branch}
       <article class="branch">
-        <h3>{branch.name}</h3>
+        <h3><a href={`/${repo}/${branch.name}`}>{branch.name}</a></h3>
         <ul class="members">
           {#each Object.entries(branch.memberCommitCounts).sort((a,b)=>b[1]-a[1]) as [login, count]}
             <li>
@@ -48,24 +48,6 @@
 </main>
 
 <style>
-main {
-  max-width: 900px;
-  margin: 2rem auto;
-  font-family: system-ui, sans-serif;
-}
-h1 {
-  text-transform: uppercase;
-}
-h2 {
-  font-weight: normal;
-}
-a {
-  color: #0366d6;
-  text-decoration: none;
-}
-a:hover {
-  text-decoration: underline;
-}
 .totals {
   margin-bottom: 2rem;
 }

@@ -107,3 +107,76 @@ export async function fetchRepoTeams(org, repo, token) {
 export async function fetchRepoContributors(org, repo, token) {
   return ghFetch(`${API}/repos/${org}/${repo}/contributors?per_page=100`, token);
 }
+
+/**
+ * Fetch detailed information for a specific commit.
+ * Includes changed files, additions, deletions, and stats.
+ */
+export async function fetchCommitDetails(org, repo, sha, token) {
+  const API = "https://api.github.com";
+
+  try {
+    const data = await ghFetch(`${API}/repos/${org}/${repo}/commits/${sha}`, token);
+
+    return {
+      sha: data.sha,
+      author: data.commit?.author?.name ?? data.author?.login,
+      avatar_url: data.author?.avatar_url ?? null,
+      message: data.commit?.message,
+      date: data.commit?.author?.date,
+      stats: data.stats ?? { total: 0, additions: 0, deletions: 0 },
+      files: data.files?.map(f => ({
+        filename: f.filename,
+        additions: f.additions,
+        deletions: f.deletions,
+        changes: f.changes
+      })) ?? []
+    };
+  } catch (err) {
+    console.error(`Failed to fetch commit details for ${repo}@${sha}:`, err);
+    throw new Error(`Could not load commit details`);
+  }
+}
+
+
+/**
+ * Fetch all commits for a branch
+ * Optionally limits to the latest `maxCommits` for rate-limit safety
+ */
+export async function fetchBranchCommits(org, repo, branch, token, maxCommits = 100) {
+  const commits = [];
+  let page = 1;
+  let remaining = maxCommits;
+  const perPage = Math.min(100, remaining);
+
+  while (remaining > 0) {
+    try {
+      const res = await ghFetch(
+        `https://api.github.com/repos/${org}/${repo}/commits?sha=${branch}&per_page=${perPage}&page=${page}`,
+        token
+      );
+
+      if (res.length === 0) break;
+
+      commits.push(
+        ...res.map(c => ({
+          sha: c.sha,
+          message: c.commit.message,
+          date: c.commit.author.date,
+          author: c.author?.login ?? c.commit.author.name,
+          avatar_url: c.author?.avatar_url ?? null
+        }))
+      );
+
+      if (res.length < perPage) break; // last page
+      page++;
+      remaining -= res.length;
+    } catch (err) {
+      console.error(`Failed to fetch commits for branch ${branch} in ${repo}:`, err);
+      break;
+    }
+  }
+
+  return commits;
+}
+
