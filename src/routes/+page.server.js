@@ -1,6 +1,8 @@
 import { GITHUB_ORGANIZATION, GITHUB_TOKEN } from '$env/static/private';
 import { fetchOrgTeams, fetchTeamRepos, fetchTeamMembers } from '$lib/github';
 
+export const prerender = true
+
 export async function load() {
   const org = GITHUB_ORGANIZATION;
   const token = GITHUB_TOKEN;
