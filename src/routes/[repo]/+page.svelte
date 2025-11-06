@@ -1,5 +1,6 @@
 
 <script>
+  import ExternalLink from '$lib/icons/ExternalLink.svelte'
   let {data} = $props();
   let { org, repo, branches = [], teamMembers = [], totalCommits = {} } = data;
 
@@ -33,7 +34,12 @@
   {:else}
     {#each branches as branch}
       <article class="branch">
-        <h3><a href={`/${repo}/${branch.name}`}>{branch.name}</a></h3>
+        <h3>
+          <a href={`/${repo}/${branch.name}`}>{branch.name}</a>
+          <a href="{`https://github.com/fdnd-agency/${repo}/${branch}`}" target="_blank" rel="noopener noreferrer">
+            <ExternalLink size=16 />
+          </a>
+        </h3>
         <ul class="members">
           {#each Object.entries(branch.memberCommitCounts).sort((a,b)=>b[1]-a[1]) as [login, count]}
             <li>

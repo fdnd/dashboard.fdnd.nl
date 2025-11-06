@@ -1,4 +1,5 @@
 <script>
+  import ExternalLink from '$lib/icons/ExternalLink.svelte'
   let { data } = $props()
   let { repo, branch, commits } = data
 
@@ -11,9 +12,11 @@
   <ul>
     {#each commits as c}
     <li>
-      <!-- full SHA must go in the URL -->
       <a href={`/${repo}/${branch}/${c.sha}`}>
         <img src="{c.avatar_url}" width="24" height="24" alt="{c.author}"><strong>{c.author}</strong> <code>{c.sha.slice(0,7)}</code> <em>{c.message}</em>
+      </a>
+      <a href="{`https://github.com/fdnd-agency/${repo}/${branch}/${c.sha}`}" target="_blank" rel="noopener noreferrer">
+        <ExternalLink size=16 />
       </a>
     </li>
   {/each}
