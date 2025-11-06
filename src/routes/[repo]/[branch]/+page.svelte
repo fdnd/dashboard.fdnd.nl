@@ -30,13 +30,23 @@
     flex-direction: column;
     gap:.5rem;
   }
+
   li {
     display:flex;
-    gap:.5rem
-  }
-  a {
-    display:grid;
-    grid-template-columns: 24px  minmax(0, 1fr) max-content auto;
     gap:.5rem;
+    align-items:start;
+  }
+
+  a {
+    display:flex;
+    flex-wrap: wrap;
+    gap:.5rem;
+    align-items:center;
+
+    @media (min-width:30rem) {
+      display:grid;
+      grid-template-columns: 24px  minmax(0, 1fr) max-content auto;
+      
+    }
   }
 </style>
