@@ -6,14 +6,15 @@
   $inspect(commits)
 </script>
 
-<main>
-  <h1>{repo} / {branch}</h1>
+<section class="simple-text">
+  <h2>{repo} </h2>
+  <p>Branch: {branch}</p>
 
   <ul>
     {#each commits as c}
     <li>
       <a href={`/${repo}/${branch}/${c.sha}`}>
-        <img src="{c.avatar_url}" width="24" height="24" alt="{c.author}"><strong>{c.author}</strong> <code>{c.sha.slice(0,7)}</code> <em>{c.message}</em>
+        <img src="{c.avatar_url}" width="24" height="24" alt="{c.author}" class="avatar"><strong>{c.author}</strong> <code>{c.sha.slice(0,7)}</code> <em>{c.message}</em>
       </a>
       <a href="{`https://github.com/fdnd-agency/${repo}/${branch}/${c.sha}`}" target="_blank" rel="noopener noreferrer">
         <ExternalLink size=16 />
@@ -21,17 +22,21 @@
     </li>
   {/each}
   </ul>
-
-</main>
+</section>
 
 <style>
-  a {
+  ul {
     display:flex;
-    gap: 1em;
+    flex-direction: column;
+    gap:.5rem;
   }
-
-  img {
-    aspect-ratio: 1;
-    border-radius: 50%;
+  li {
+    display:flex;
+    gap:.5rem
+  }
+  a {
+    display:grid;
+    grid-template-columns: 24px  minmax(0, 1fr) max-content auto;
+    gap:.5rem;
   }
 </style>

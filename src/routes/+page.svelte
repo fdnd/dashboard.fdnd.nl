@@ -4,8 +4,8 @@
   let { org, repos } = data
 </script>
 
-<main>
-  <h1>{org}</h1>
+<section class="simple-text">
+  <h2>{org}</h2>
   <p>Active repositories (with an active team)</p>
   <ul>
     {#each repos as repo}
@@ -17,4 +17,5 @@
       </li>
     {/each}
   </ul>
-</main>
+</section>
+

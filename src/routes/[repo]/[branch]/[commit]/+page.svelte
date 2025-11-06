@@ -4,11 +4,11 @@
   let { repo, sha, details } = data
 </script>
 
-<main>
+<section class="simple-text">
   <a href={`/${repo}`}>← Back to {repo}</a>
-  
+
   {#if details}
-    <h1>Commit {sha.slice(0, 7)}</h1>
+    <h2>Commit {sha.slice(0, 7)}</h2>
 
     <section>
       <p><strong>Author:</strong> {details.author}</p>
@@ -38,4 +38,4 @@
   {:else}
     <p>Commit details unavailable (possibly deleted or invalid)</p>
   {/if}
-</main>
+</section>
