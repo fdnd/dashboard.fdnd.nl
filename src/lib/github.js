@@ -1,8 +1,5 @@
 const API = "https://api.github.com";
 
-/**
- * Generic GitHub fetch helper
- */
 export async function ghFetch(url, token) {
   const res = await fetch(url, {
     headers: {
@@ -19,37 +16,22 @@ export async function ghFetch(url, token) {
   return res.json();
 }
 
-/**
- * Fetch all teams in the org
- */
 export async function fetchOrgTeams(org, token) {
   return ghFetch(`${API}/orgs/${org}/teams?per_page=100`, token);
 }
 
-/**
- * Fetch repos a team has access to
- */
 export async function fetchTeamRepos(org, team_slug, token) {
   return ghFetch(`${API}/orgs/${org}/teams/${team_slug}/repos?per_page=100`, token);
 }
 
-/**
- * Fetch members of a team
- */
 export async function fetchTeamMembers(org, team_slug, token) {
   return ghFetch(`${API}/orgs/${org}/teams/${team_slug}/members?per_page=100`, token);
 }
 
-/**
- * Fetch all branches for a repo
- */
 export async function fetchRepoBranches(org, repo, token) {
   return ghFetch(`${API}/repos/${org}/${repo}/branches?per_page=100`, token);
 }
 
-/**
- * Fetch commit count for a branch and author using Link header
- */
 export async function fetchCommitCount(org, repo, branch, username, token) {
   try {
     const res = await fetch(
@@ -85,9 +67,6 @@ export async function fetchCommitCount(org, repo, branch, username, token) {
   }
 }
 
-/**
- * Optional: other repo-level functions (if needed)
- */
 export async function fetchRepoTeams(org, repo, token) {
   return ghFetch(`${API}/repos/${org}/${repo}/teams?per_page=100`, token);
 }
@@ -96,10 +75,6 @@ export async function fetchRepoContributors(org, repo, token) {
   return ghFetch(`${API}/repos/${org}/${repo}/contributors?per_page=100`, token);
 }
 
-/**
- * Fetch detailed information for a specific commit.
- * Includes changed files, additions, deletions, and stats.
- */
 export async function fetchCommitDetails(org, repo, sha, token) {
   const API = "https://api.github.com";
 
@@ -126,11 +101,6 @@ export async function fetchCommitDetails(org, repo, sha, token) {
   }
 }
 
-
-/**
- * Fetch all commits for a branch
- * Optionally limits to the latest `maxCommits` for rate-limit safety
- */
 export async function fetchBranchCommits(org, repo, branch, token, maxCommits = 100) {
   const commits = [];
   let page = 1;
@@ -168,9 +138,6 @@ export async function fetchBranchCommits(org, repo, branch, token, maxCommits = 
   return commits;
 }
 
-/**
- * Fetch stats (files changed and total lines added/deleted) for a specific commit
- */
 export async function fetchCommitStats(org, repo, sha, token) {
   try {
     const commit = await ghFetch(`${API}/repos/${org}/${repo}/commits/${sha}`, token);
@@ -181,4 +148,41 @@ export async function fetchCommitStats(org, repo, sha, token) {
     return { filesChanged: 0 };
   }
 }
+
+export async function fetchRepoPullRequests(org, repo, token) {
+  const perPage = 100;
+  let page = 1;
+  let allPRs = [];
+
+  try {
+    while (true) {
+      const prs = await ghFetch(
+        `${API}/repos/${org}/${repo}/pulls?state=all&per_page=${perPage}&page=${page}`,
+        token
+      );
+
+      if (!prs || prs.length === 0) break;
+      allPRs = allPRs.concat(prs);
+      if (prs.length < perPage) break;
+
+      page++;
+    }
+
+    return allPRs.map(pr => ({
+      id: pr.id,
+      number: pr.number,
+      title: pr.title,
+      user: pr.user?.login ?? 'unknown',
+      state: pr.state,
+      html_url: pr.html_url,
+      merged_at: pr.merged_at ?? null,
+      created_at: pr.created_at,
+      updated_at: pr.updated_at
+    }));
+  } catch (err) {
+    console.error(`Failed to fetch PRs for ${repo}:`, err);
+    return [];
+  }
+}
+
 

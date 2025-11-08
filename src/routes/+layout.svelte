@@ -1,5 +1,5 @@
 <script>
-	import favicon from '$lib/assets/favicon.svg'
+	import favicon from '$lib/assets/favi.png'
 	import Header from '$lib/components/Header.svelte'
   import Footer from '$lib/components/Footer.svelte'
 	import RateLimit from '$lib/components/RateLimit.svelte'

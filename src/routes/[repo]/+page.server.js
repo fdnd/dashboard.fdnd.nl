@@ -3,7 +3,8 @@ import {
   fetchRepoTeams, 
   fetchTeamMembers, 
   fetchRepoBranches, 
-  fetchCommitCount
+  fetchCommitCount, 
+  fetchRepoPullRequests 
 } from '$lib/github';
 
 export const prerender = false;
@@ -16,7 +17,10 @@ export async function load({ params }) {
   let branches = [];
   let teamMembers = [];
   let totalCommits = {};
-  let totalStats = {}; // 🔹 new: aggregated stats (files + lines) per member
+  let openPRs = [];
+  let closedPRs = [];
+  let mergedPRs = [];
+  let pullRequestStats = {};
 
   try {
     const teams = await fetchRepoTeams(org, repo, token);
@@ -26,11 +30,7 @@ export async function load({ params }) {
       teamMembers = await fetchTeamMembers(org, teamSlug, token);
       const branchData = await fetchRepoBranches(org, repo, token);
 
-      // Initialize totals
-      teamMembers.forEach((m) => {
-        totalCommits[m.login] = 0;
-        totalStats[m.login] = { filesChanged: 0, linesChanged: 0 };
-      });
+      teamMembers.forEach(m => (totalCommits[m.login] = 0));
 
       branches = await Promise.all(
         branchData.map(async (b) => {
@@ -48,11 +48,58 @@ export async function load({ params }) {
           return { name: branchName, memberCommitCounts };
         })
       );
+
+      const prs = await fetchRepoPullRequests(org, repo, token);
+
+      teamMembers.forEach(m => {
+        pullRequestStats[m.login] = { open: 0, closed: 0, merged: 0, total: 0 };
+      });
+
+      openPRs = [];
+      closedPRs = [];
+      mergedPRs = [];
+
+      for (const pr of prs) {
+        const author = pr.user?.login?.toLowerCase();
+        const matchedMember = teamMembers.find(m => m.login.toLowerCase() === author);
+
+        if (pr.merged_at) {
+          mergedPRs.push(pr);
+          closedPRs.push(pr);
+        } else if (pr.state === 'open') {
+          openPRs.push(pr);
+        } else {
+          closedPRs.push(pr);
+        }
+
+        if (matchedMember && pullRequestStats[matchedMember.login]) {
+          const stats = pullRequestStats[matchedMember.login];
+          stats.total += 1;
+
+          if (pr.merged_at) {
+            stats.merged += 1;
+            stats.closed += 1; 
+          } else if (pr.state === 'open') {
+            stats.open += 1;
+          } else {
+            stats.closed += 1;
+          }
+        }
+      }
     }
   } catch (err) {
-    console.error(`Failed to fetch team/branches for repo ${repo}:`, err);
-    branches = [];
+    console.error(`Failed to fetch data for repo ${repo}:`, err);
   }
 
-  return { org, repo, branches, teamMembers, totalCommits };
+  return { 
+    org, 
+    repo, 
+    branches, 
+    teamMembers, 
+    totalCommits, 
+    openPRs, 
+    closedPRs, 
+    mergedPRs,
+    pullRequestStats
+  };
 }
