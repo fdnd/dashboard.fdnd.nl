@@ -163,7 +163,7 @@ main::after {
 }
 
 section h2 {
-    margin:1rem 0;
+    margin:1rem 0 0;
     text-transform: uppercase;
 }
 
@@ -175,6 +175,10 @@ section ul {
     padding:0;
     margin:1rem 0;
     list-style: none;
+}
+
+section header ul {
+    margin:0;
 }
 
 form {

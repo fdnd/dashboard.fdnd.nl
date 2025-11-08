@@ -1,17 +1,29 @@
 
 <script>
+  import Breadcrumb from '$lib/components/Breadcrumb.svelte'
   import ExternalLink from '$lib/icons/ExternalLink.svelte'
   let {data} = $props();
-  let { org, repo, branches = [], teamMembers = [], totalCommits = {} } = data;
+  let { org, repo, branches = [], teamMembers = [], totalCommits = {}} = data;
 
   const memberMap = {};
   teamMembers.forEach(m => memberMap[m.login] = m);
 </script>
 
 <section class="simple-text simple-grid">
+  
   <header>
-    <a href="/">← Back to active repos</a>
-    <h2>{repo}</h2>
+    <Breadcrumb items={[
+      { label: 'Repositories', href: '/' },
+      { label: repo }
+    ]} />
+
+    <h2>
+      {repo}
+      <a href={`https://github.com/fdnd-agency/${repo}/`} target="_blank" rel="noopener noreferrer">
+        <span class="sr-only">Bekijk op GitHub</span>
+        <ExternalLink size={12} />
+      </a>
+    </h2>
   </header>
   
 
@@ -19,12 +31,13 @@
   <section class="totals">
     <h3>Total Commits</h3>
     <ul class="members">
-      {#each Object.entries(totalCommits).sort((a,b)=>b[1]-a[1]) as [login, count]}
-        <li>
-          <img src={memberMap[login]?.avatar_url} width="32" height="32" alt={login} class="avatar" />
-          <strong>{login}</strong>: {count} commits
-        </li>
-      {/each}
+    {#each Object.entries(totalCommits) as [login, count]}
+      <li>
+        <img src={memberMap[login]?.avatar_url} width="32" height="32" alt={login} class="avatar" />
+        <strong>{login}</strong>
+        <span>{count} commits</span>
+      </li>
+    {/each}
     </ul>
   </section>
 
@@ -38,8 +51,8 @@
       <article class="branch">
         <h4>
           <a href={`/${repo}/${branch.name}`}>{branch.name}</a>
-          <a href="{`https://github.com/fdnd-agency/${repo}/${branch}`}" target="_blank" rel="noopener noreferrer">
-            <ExternalLink size=16 />
+          <a href="{`https://github.com/fdnd-agency/${repo}/tree/${branch.name}`}" target="_blank" rel="noopener noreferrer">
+            <ExternalLink size={12} />
           </a>
         </h4>
         <ul class="members">
@@ -67,8 +80,20 @@
       grid-column:1 / -1;
     }
 
-    @media (min-width: 30rem) {
+    @media (min-width: 40rem) {
       grid-template-columns: max-content auto;
+    }
+  }
+
+  ul.members {
+    display:flex;
+    flex-direction:column;
+    gap:.25rem;
+
+    li {
+      display:flex;
+      align-items:center;
+      gap:.25rem;
     }
   }
 </style>

@@ -1,5 +1,10 @@
 import { GITHUB_ORGANIZATION, GITHUB_TOKEN } from '$env/static/private';
-import { fetchRepoTeams, fetchTeamMembers, fetchRepoBranches, fetchCommitCount } from '$lib/github';
+import { 
+  fetchRepoTeams, 
+  fetchTeamMembers, 
+  fetchRepoBranches, 
+  fetchCommitCount
+} from '$lib/github';
 
 export const prerender = false;
 
@@ -11,19 +16,21 @@ export async function load({ params }) {
   let branches = [];
   let teamMembers = [];
   let totalCommits = {};
+  let totalStats = {}; // 🔹 new: aggregated stats (files + lines) per member
 
   try {
-    // Pick first team for this repo
     const teams = await fetchRepoTeams(org, repo, token);
     const teamSlug = teams.length > 0 ? teams[0].slug : null;
 
     if (teamSlug) {
       teamMembers = await fetchTeamMembers(org, teamSlug, token);
-
       const branchData = await fetchRepoBranches(org, repo, token);
 
-      // Initialize total commits
-      teamMembers.forEach(m => totalCommits[m.login] = 0);
+      // Initialize totals
+      teamMembers.forEach((m) => {
+        totalCommits[m.login] = 0;
+        totalStats[m.login] = { filesChanged: 0, linesChanged: 0 };
+      });
 
       branches = await Promise.all(
         branchData.map(async (b) => {
@@ -34,8 +41,6 @@ export async function load({ params }) {
             teamMembers.map(async (m) => {
               const count = await fetchCommitCount(org, repo, branchName, m.login, token);
               memberCommitCounts[m.login] = count;
-
-              // Add to total commits
               totalCommits[m.login] += count;
             })
           );

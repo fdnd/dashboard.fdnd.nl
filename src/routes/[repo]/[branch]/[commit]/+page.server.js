@@ -1,23 +1,19 @@
-import { GITHUB_ORGANIZATION, GITHUB_TOKEN } from '$env/static/private';
-import { fetchCommitDetails } from '$lib/github';
+// src/routes/[repo]/[branch]/[commit]/+page.server.js
+import { GITHUB_ORGANIZATION, GITHUB_TOKEN } from '$env/static/private'
+import { fetchCommitDetails } from '$lib/github'
 
-export const prerender = false;
+export const prerender = false // no need to prerender all commits
 
 export async function load({ params }) {
-  const org = GITHUB_ORGANIZATION;
-  const token = GITHUB_TOKEN;
-  const repo = params.repo;
-  const sha = params.commit; // full commit SHA
-
-  let details = null;
+  const { repo, branch, commit } = params
+  const org = GITHUB_ORGANIZATION
+  const token = GITHUB_TOKEN
 
   try {
-    details = await fetchCommitDetails(org, repo, sha, token);
+    const details = await fetchCommitDetails(org, repo, commit, token)
+    return { repo, branch, sha: commit, details }
   } catch (err) {
-    // Gracefully skip commits that cause 404 or 422
-    console.warn(`Skipping commit ${sha} in ${repo}: ${err.message}`);
-    details = null;
+    console.error(`Failed to fetch commit details for ${repo}@${branch}:`, err)
+    return { repo, branch, sha: commit, details: null }
   }
-
-  return { org, repo, sha, details };
 }

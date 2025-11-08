@@ -20,12 +20,6 @@ export async function ghFetch(url, token) {
 }
 
 /**
- * ======================
- * Org-level functions
- * ======================
- */
-
-/**
  * Fetch all teams in the org
  */
 export async function fetchOrgTeams(org, token) {
@@ -45,12 +39,6 @@ export async function fetchTeamRepos(org, team_slug, token) {
 export async function fetchTeamMembers(org, team_slug, token) {
   return ghFetch(`${API}/orgs/${org}/teams/${team_slug}/members?per_page=100`, token);
 }
-
-/**
- * ======================
- * Repo-level functions
- * ======================
- */
 
 /**
  * Fetch all branches for a repo
@@ -178,5 +166,19 @@ export async function fetchBranchCommits(org, repo, branch, token, maxCommits = 
   }
 
   return commits;
+}
+
+/**
+ * Fetch stats (files changed and total lines added/deleted) for a specific commit
+ */
+export async function fetchCommitStats(org, repo, sha, token) {
+  try {
+    const commit = await ghFetch(`${API}/repos/${org}/${repo}/commits/${sha}`, token);
+    const filesChanged = commit.files?.length ?? 0;
+    return { filesChanged }; // ✅ only return files changed
+  } catch (err) {
+    console.error(`Failed to fetch stats for commit ${sha}:`, err);
+    return { filesChanged: 0 };
+  }
 }
 
