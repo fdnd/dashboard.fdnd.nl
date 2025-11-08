@@ -35,18 +35,8 @@
 <style>
   ol {
     display:flex;
-    flex-direction:column;
+    flex-wrap:wrap;
     padding:0 0 .5rem;
-    overflow-x:auto;
-
-    @media (min-width:30em) {
-      flex-direction: row;
-      flex-wrap:nowrap;
-    }
-
-    li:not(:first-child) {
-      margin-left:calc(24px + .25rem);
-    }
 
     li {
       display:flex;
