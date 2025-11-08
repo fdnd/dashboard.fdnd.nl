@@ -35,12 +35,28 @@
 <style>
   ol {
     display:flex;
-    padding:0;
+    flex-direction:column;
+    padding:0 0 .5rem;
+    overflow-x:auto;
+
+    @media (min-width:30em) {
+      flex-direction: row;
+      flex-wrap:nowrap;
+    }
+
+    li:not(:first-child) {
+      margin-left:calc(24px + .25rem);
+    }
 
     li {
       display:flex;
       gap:.25rem;
+      flex-wrap:nowrap;
 
+      * {
+        text-wrap:nowrap;
+      }
+      
       a::first-letter, span::first-letter {
         text-transform: capitalize;
       }
