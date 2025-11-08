@@ -22,44 +22,53 @@
     </h2>
   </header>
   
-
-  <ul>
-    {#each commits as c}
-    <li>
-      <a href={`/${repo}/${branch}/${c.sha}`}>
-        <img src="{c.avatar_url}" width="24" height="24" alt="{c.author}" class="avatar"><strong>{c.author}</strong> <code>{c.sha.slice(0,7)}</code> <em>{c.message}</em>
-      </a>
-      <a href="{`https://github.com/fdnd-agency/${repo}/${branch}/${c.sha}`}" target="_blank" rel="noopener noreferrer">
-        <ExternalLink size={12} />
-      </a>
-    </li>
-  {/each}
-  </ul>
+  <div class="scroller">
+    <table>
+      <tbody>
+        {#each commits as c}
+        <tr> 
+          <td><img src="{c.avatar_url}" width="24" height="24" alt="{c.author}" class="avatar"></td>
+          <td><code>{c.author}</code></td>
+          <td><code>{c.sha.slice(0,7)}</code></td>
+          <td class="message"><code>{c.message}</code></td>
+          <td class="more-info"><a href={`/${repo}/${branch}/${c.sha}`}><code>bekijk commit</code></a></td>
+          <td class="more-info">
+            <a href="{`https://github.com/fdnd-agency/${repo}/${branch}/${c.sha}`}" target="_blank" rel="noopener noreferrer">
+              <code>open in GitHub</code>
+              <ExternalLink size={12} />
+            </a>
+          </td>
+        </tr>
+        {/each}
+      </tbody>
+    </table>
+  </div>
+  
 </section>
 
 <style>
-  ul {
-    display:flex;
-    flex-direction: column;
-    gap:.5rem;
+.scroller {
+  width:100%;
+  overflow-x:auto;
+}
+table {
+  border-collapse: collapse;
+
+  tr:nth-of-type(even) {
+    background-color: rgb(0,0,0,.025);
   }
 
-  li {
-    display:flex;
-    gap:.5rem;
-    align-items:start;
+  td {
+    padding:.5rem;
+    vertical-align: top;
   }
 
-  li a {
-    display:flex;
-    flex-wrap: wrap;
-    gap:.5rem;
-    align-items:center;
-
-    @media (min-width:80rem) {
-      display:grid;
-      grid-template-columns: 24px  minmax(0, 1fr) max-content auto;
-      
-    }
+  td.message {
+    min-width:40ch;
   }
+
+  td.more-info {
+    white-space: nowrap;
+  }
+}
 </style>

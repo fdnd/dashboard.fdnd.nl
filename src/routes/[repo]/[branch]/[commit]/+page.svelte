@@ -8,7 +8,7 @@
 <section class="simple-text">
   <header>
     <Breadcrumb items={[
-      { label: 'Repos', href: '/' },
+      { label: 'Repositories', href: '/' },
       { label: repo, href: `/${repo}` },
       { label: branch, href: `/${repo}/${branch}` },
       { label: sha.slice(0, 7) }
@@ -22,7 +22,7 @@
       </a>
     </h2>
   </header>
-
+  
   {#if details}
     <ul>
       <li><strong>Author:</strong> {details.author}</li>

@@ -49,20 +49,36 @@
   {:else}
     {#each branches as branch}
       <article class="branch">
-        <h4>
-          <a href={`/${repo}/${branch.name}`}>{branch.name}</a>
-          <a href="{`https://github.com/fdnd-agency/${repo}/tree/${branch.name}`}" target="_blank" rel="noopener noreferrer">
-            <ExternalLink size={12} />
-          </a>
-        </h4>
-        <ul class="members">
-          {#each Object.entries(branch.memberCommitCounts).sort((a,b)=>b[1]-a[1]) as [login, count]}
-            <li>
-              <img src={memberMap[login]?.avatar_url} width="32" height="32" alt={login} class="avatar" />
-              <strong>{login}</strong>: {count} commits
-            </li>
-          {/each}
-        </ul>
+        <details>
+          <summary>
+            <h4>
+              {branch.name}
+            </h4>
+          </summary>
+
+          <div class="body">
+            <ul class="members">
+              {#each Object.entries(branch.memberCommitCounts).sort((a,b)=>b[1]-a[1]) as [login, count]}
+                <li>
+                  <img src={memberMap[login]?.avatar_url} width="32" height="32" alt={login} class="avatar" />
+                  <strong>{login}</strong>: {count} commits
+                </li>
+              {/each}
+            </ul>
+
+            <ul class="more-info">
+              <li><a href={`/${repo}/${branch.name}`}>meer informatie</a></li>
+              <li>
+                <a href={`https://fdnd-agency/${repo}/tree/${branch.name}`}>
+                  <span>bekijk op GitHub</span>
+                  <ExternalLink size={12} />
+                </a>
+              </li>
+            </ul>
+
+           
+          </div>
+        </details>
       </article>
     {/each}
   {/if}
@@ -77,7 +93,44 @@
     gap:4rem;
 
     header {
-      grid-column:1 / -1;
+      grid-column: 1 / -1;
+    }
+
+    section:last-of-type {
+      display:flex;
+      flex-direction:column;
+
+      h3 {
+        margin-bottom: 1rem;
+      }
+
+      @media (min-width: 40rem) {
+        max-width:75%;
+      }
+
+      div.body {
+        padding:1rem;
+        display:flex;
+        flex-direction:column;
+
+        .more-info {
+          display:flex;
+          align-self:end;
+          gap:.5rem;
+          margin:0;
+
+
+
+          li:first-child::after {
+            content: " |";
+
+          }
+        }
+      }
+    }
+
+    article {
+      margin-bottom: 1rem;
     }
 
     @media (min-width: 40rem) {
@@ -89,6 +142,7 @@
     display:flex;
     flex-direction:column;
     gap:.25rem;
+    
 
     li {
       display:flex;
@@ -96,4 +150,6 @@
       gap:.25rem;
     }
   }
+
+  
 </style>

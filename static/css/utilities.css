@@ -591,9 +591,11 @@ details + details {
 }
 
 details summary {
-    padding: 1.25rem;
-    transition: background 0.3s ease-out, color 0.3s ease-out;
+    padding: 1rem 3.5rem 1rem 1rem;
+    transition: background-color 0.3s ease-out, color 0.3s ease-out;
     cursor: pointer;
+    list-style: none;
+    position: relative;
 }
 
 details[open] summary {
@@ -601,14 +603,35 @@ details[open] summary {
     color: var(--active-text-color);
 }
 
-details p {
-    padding:0 1.25rem 1em;
+details summary::before {
+    content: " "; /* closed icon */
+    background: url("caret-down.svg") no-repeat center / contain;
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    height:1.5rem;
+    width:1.5rem;
+    transform-origin: 50% 50%;
+    transition: transform .2s;
 }
 
-details .button {
-    display: block;
-    width: max-content;
-    margin: 1em;
+details[open] summary::before {
+    transform: rotate(180deg); /* rotate when open */
+}
+
+details[open] table {
+    animation: animateDown 0.2s linear forwards;
+}
+
+@keyframes animateDown {
+  0% {
+    opacity: 0;
+    transform: translatey(35px);
+  }
+  100% {
+    opacity: 1;
+    transform: translatey(0);
+  }
 }
 
 /*
@@ -682,5 +705,6 @@ Program
 }
 
 .avatar {
-    border-radius:50%
+    border-radius:50%;
+    border:1px solid var(--blue)
 }
