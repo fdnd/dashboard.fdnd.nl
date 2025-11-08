@@ -26,11 +26,37 @@
     {#each repos as repo}
       <li>
         <a href={`/${repo.name}`}>{repo.name}</a> 
-        <a href="{`https://github.com/fdnd-agency/${repo.name}`}" target="_blank" rel="noopener noreferrer">
-          <ExternalLink size=12 />
-        </a>
       </li>
     {/each}
   </ul>
 </section>
 
+<style>
+  ul {
+    display:flex;
+    gap:.5rem;
+    align-items:start;
+    flex-wrap: wrap;
+    max-width:80%;
+
+    li {
+      border: 1px solid currentColor;
+      border-radius: var(--small-radius);
+      display:flex;
+      overflow: hidden;
+
+      a {
+        padding:.5rem;
+        text-decoration:none;
+        background-color: var(--green);
+      }
+
+      a:hover {
+        background-color: var(--purple);
+      }
+
+    }
+    
+    
+  }
+</style>

@@ -119,11 +119,8 @@
           gap:.5rem;
           margin:0;
 
-
-
           li:first-child::after {
             content: " |";
-
           }
         }
       }
