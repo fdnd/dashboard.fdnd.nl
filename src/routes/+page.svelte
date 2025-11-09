@@ -67,12 +67,14 @@
       grid-template-columns: 1fr 1fr 1fr;
     }
   
-    a {
+    > a {
       text-decoration:none;
       border-radius: var(--radius);
+      background-color: var(--accent-color-2);
+      transition:.25s;
 
       &:hover {
-        background-color: var(--accent-color-2);
+        background-color: var(--accent-color-1);
       }
 
       article {
