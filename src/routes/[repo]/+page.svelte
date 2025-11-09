@@ -36,6 +36,7 @@
           <strong>{login}</strong> 
           <small>{count} commits</small>
           <!-- PRs: {pullRequestStats[login]?.open ?? 0} open / {pullRequestStats[login]?.closed ?? 0} closed -->
+          <!-- Issues totals & section -->
         </li>
       {/each}
     </ul>
@@ -112,7 +113,6 @@
                   <code>
                     <small class="label nr">#{pr.number}</small>
                     {pr.title}
-                    <small class="label author">{pr.user}</small>
                   </code>
                 </a>
               </li>
@@ -132,7 +132,6 @@
                   <code>
                     <small class="label nr">#{pr.number}</small>
                     {pr.title}
-                    <small class="label author">{pr.user}</small>
                     {#if pr.merged_at}
                       <small class="label merged">merged</small>
                     {/if}
@@ -215,6 +214,10 @@
 
         h5, ul {
           margin-left: 2.25rem;
+        }
+
+        ul {
+          margin-bottom: 1rem;
         }
       }
     }
