@@ -80,7 +80,8 @@
 
 /* Spacing */
 p {
-    font-size: clamp(1rem, calc(18 / 60 * var(--grid-1)), 1.5rem);
+    /* font-size: clamp(1rem, calc(18 / 60 * var(--grid-1)), 1.5rem); */
+    font-size: 1rem;
     letter-spacing: -0.03em;
 }
 

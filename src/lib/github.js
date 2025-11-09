@@ -150,32 +150,20 @@ export async function fetchCommitStats(org, repo, sha, token) {
 }
 
 export async function fetchRepoPullRequests(org, repo, token) {
-  const perPage = 100;
-  let page = 1;
-  let allPRs = [];
-
   try {
-    while (true) {
-      const prs = await ghFetch(
-        `${API}/repos/${org}/${repo}/pulls?state=all&per_page=${perPage}&page=${page}`,
-        token
-      );
+    const prs = await ghFetch(
+      `${API}/repos/${org}/${repo}/pulls?state=all&per_page=100`,
+      token
+    );
 
-      if (!prs || prs.length === 0) break;
-      allPRs = allPRs.concat(prs);
-      if (prs.length < perPage) break;
-
-      page++;
-    }
-
-    return allPRs.map(pr => ({
+    return prs.map(pr => ({
       id: pr.id,
       number: pr.number,
       title: pr.title,
-      user: pr.user?.login ?? 'unknown',
+      user: pr.user?.login ?? 'unknown', // <-- make sure we have a string
       state: pr.state,
       html_url: pr.html_url,
-      merged_at: pr.merged_at ?? null,
+      merged_at: pr.merged_at,
       created_at: pr.created_at,
       updated_at: pr.updated_at
     }));
@@ -184,5 +172,7 @@ export async function fetchRepoPullRequests(org, repo, token) {
     return [];
   }
 }
+
+
 
 

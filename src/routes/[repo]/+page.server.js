@@ -3,8 +3,8 @@ import {
   fetchRepoTeams, 
   fetchTeamMembers, 
   fetchRepoBranches, 
-  fetchCommitCount, 
-  fetchRepoPullRequests 
+  fetchCommitCount,
+  fetchRepoPullRequests
 } from '$lib/github';
 
 export const prerender = false;
@@ -17,10 +17,7 @@ export async function load({ params }) {
   let branches = [];
   let teamMembers = [];
   let totalCommits = {};
-  let openPRs = [];
-  let closedPRs = [];
-  let mergedPRs = [];
-  let pullRequestStats = {};
+  let pullRequestsByMember = {};
 
   try {
     const teams = await fetchRepoTeams(org, repo, token);
@@ -28,9 +25,10 @@ export async function load({ params }) {
 
     if (teamSlug) {
       teamMembers = await fetchTeamMembers(org, teamSlug, token);
-      const branchData = await fetchRepoBranches(org, repo, token);
 
       teamMembers.forEach(m => (totalCommits[m.login] = 0));
+
+      const branchData = await fetchRepoBranches(org, repo, token);
 
       branches = await Promise.all(
         branchData.map(async (b) => {
@@ -49,40 +47,21 @@ export async function load({ params }) {
         })
       );
 
-      const prs = await fetchRepoPullRequests(org, repo, token);
+      const allPRs = await fetchRepoPullRequests(org, repo, token);
 
       teamMembers.forEach(m => {
-        pullRequestStats[m.login] = { open: 0, closed: 0, merged: 0, total: 0 };
+        pullRequestsByMember[m.login] = { open: [], closed: [] };
       });
 
-      openPRs = [];
-      closedPRs = [];
-      mergedPRs = [];
+      for (const pr of allPRs) {
+        const authorLogin = pr.user?.toLowerCase();
+        const member = teamMembers.find(m => m.login.toLowerCase() === authorLogin);
 
-      for (const pr of prs) {
-        const author = pr.user?.login?.toLowerCase();
-        const matchedMember = teamMembers.find(m => m.login.toLowerCase() === author);
-
-        if (pr.merged_at) {
-          mergedPRs.push(pr);
-          closedPRs.push(pr);
-        } else if (pr.state === 'open') {
-          openPRs.push(pr);
-        } else {
-          closedPRs.push(pr);
-        }
-
-        if (matchedMember && pullRequestStats[matchedMember.login]) {
-          const stats = pullRequestStats[matchedMember.login];
-          stats.total += 1;
-
-          if (pr.merged_at) {
-            stats.merged += 1;
-            stats.closed += 1; 
-          } else if (pr.state === 'open') {
-            stats.open += 1;
+        if (member) {
+          if (pr.state === 'open') {
+            pullRequestsByMember[member.login].open.push(pr);
           } else {
-            stats.closed += 1;
+            pullRequestsByMember[member.login].closed.push(pr);
           }
         }
       }
@@ -97,9 +76,6 @@ export async function load({ params }) {
     branches, 
     teamMembers, 
     totalCommits, 
-    openPRs, 
-    closedPRs, 
-    mergedPRs,
-    pullRequestStats
+    pullRequestsByMember
   };
 }

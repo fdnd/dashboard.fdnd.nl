@@ -21,8 +21,9 @@ html {
 
     --grid-1: 100vw / 24;
     --grid-1-calc: calc(var(--grid-1));
-    --padding-side: clamp(1rem, var(--grid-1-calc), 5rem);
-
+    /* --padding-side: clamp(1rem, var(--grid-1-calc), 5rem); */
+    --padding-side: 1rem;
+    
     --small-radius: 0.5rem;
     --section-width: calc(100vw - 3rem);
     --max-width: 117rem;

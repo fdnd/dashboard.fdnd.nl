@@ -3,7 +3,7 @@
   import Breadcrumb from '$lib/components/Breadcrumb.svelte'
   import ExternalLink from '$lib/icons/ExternalLink.svelte'
   let {data} = $props();
-  let { org, repo, branches = [], teamMembers = [], totalCommits = {}, openPRs, closedPRs, mergedPRs, pullRequestStats } = data;
+  let { org, repo, branches = [], teamMembers = [], totalCommits = {}, openPRs, closedPRs, pullRequestsByMember } = data;
 
   const memberMap = {};
   teamMembers.forEach(m => memberMap[m.login] = m);
@@ -26,24 +26,22 @@
     </h2>
   </header>
   
-
-  <!-- Total commits per member -->
-  <section class="totals">
+  <section class="totals" id="total-commits">
     <h3><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-git-commit"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /><path d="M12 3l0 6" /><path d="M12 15l0 6" /></svg> Total Commits</h3>
 
     <ul class="members">
       {#each Object.entries(totalCommits).sort((a,b)=>b[1]-a[1]) as [login, count]}
         <li>
           <img src={memberMap[login]?.avatar_url} width="32" height="32" alt={login} class="avatar" />
-          <strong>{login}</strong>: 
-          {count} commits 
+          <strong>{login}</strong> 
+          <small>{count} commits</small>
           <!-- PRs: {pullRequestStats[login]?.open ?? 0} open / {pullRequestStats[login]?.closed ?? 0} closed -->
         </li>
       {/each}
     </ul>
   </section>
 
-  <section>
+  <section id="branches">
     <h3><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-git-branch"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M7 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M17 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M7 8l0 8" /><path d="M9 18h6a2 2 0 0 0 2 -2v-5" /><path d="M14 14l3 -3l3 3" /></svg> Branches</h3>
 
     {#if branches.length === 0}
@@ -92,36 +90,64 @@
   {/if}
   </section>
 
-  <section>
+  {#if pullRequestsByMember}
+  <section id="pull-requests">
     <h3><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-git-pull-request"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M6 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M18 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M6 8l0 8" /><path d="M11 6h5a2 2 0 0 1 2 2v8" /><path d="M14 9l-3 -3l3 -3" /></svg> Pull Requests</h3>
 
-    <h4>Open PR's</h4>
-    <ul>
-      {#each openPRs as pr}
-        <li>
-          <a href={pr.html_url} target="_blank" rel="noopener noreferrer">
-            #{pr.number} / {pr.title} by {pr.user}
-          </a>
-        </li>
-      {/each}
-    </ul>
+    {#each Object.entries(pullRequestsByMember) as [login, prs]}
+      {$inspect(prs)}
+      <article>
+        <h4>
+          <img src={memberMap[login]?.avatar_url} width="32" height="32" alt={login} class="avatar" />
+          <span>{login}</span>
+        </h4>
+        {#if prs.open.length > 0}
+          <h5>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-git-pull-request-draft"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M6 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M18 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M6 8v8" /><path d="M18 11h.01" /><path d="M18 6h.01" /></svg> 
+            <span>Open <small>{prs.open.length}</small></span> 
+          </h5>
+          <ul>
+            {#each prs.open as pr}
+              <li>
+                <a href={pr.html_url} target="_blank" rel="noopener noreferrer">
+                  <code>
+                    <small class="label nr">#{pr.number}</small>
+                    {pr.title}
+                    <small class="label author">{pr.user}</small>
+                  </code>
+                </a>
+              </li>
+            {/each}
+          </ul>
+        {/if}
 
-    <h4>Closed PR's</h4>
-    <ul>
-      {#each closedPRs as pr}
-        <li>
-          <a href={pr.html_url} target="_blank" rel="noopener noreferrer">
-            {pr.title}
-          </a>
-          <small class="label nr">#{pr.number}</small>
-          <small class="label author">{pr.user}</small>
-          {#if pr.merged_at}
-            <small class="label merged">merged</small>
-          {/if}
-        </li>
-      {/each}
-    </ul>
+        {#if prs.closed.length > 0}
+          <h5>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-git-pull-request-closed"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M6 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M18 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M6 8v8" /><path d="M18 11v5" /><path d="M16 4l4 4m0 -4l-4 4" /></svg>
+            <span>Closed <small>{prs.closed.length}</small></span>
+          </h5>
+          <ul>
+            {#each prs.closed as pr}
+              <li>
+                <a href={pr.html_url} target="_blank" rel="noopener noreferrer">
+                  <code>
+                    <small class="label nr">#{pr.number}</small>
+                    {pr.title}
+                    <small class="label author">{pr.user}</small>
+                    {#if pr.merged_at}
+                      <small class="label merged">merged</small>
+                    {/if}
+                  </code>
+                </a>
+              </li>
+            {/each}
+          </ul>
+        {/if}
+      </article>
+    {/each}
   </section>
+  {/if}
+
 
 </section>
 
@@ -149,6 +175,10 @@
         display:flex;
         flex-direction:column;
 
+        ul {
+          margin:0;
+        }
+
         .more-info {
           display:flex;
           align-self:end;
@@ -163,17 +193,50 @@
         }
       }
     }
-
-    section:first-of-type {
-      grid-column: 1 / 2;
-    }
-
     article {
       margin-bottom: 1rem;
     }
 
     @media (min-width: 40rem) {
-      grid-template-columns: auto 1fr;
+      grid-template-columns: 1fr 1fr;
+
+      section#total-commits {
+        grid-column: 1 / 2;
+        grid-row: 2 / 3;
+      }
+
+      section#branches {
+        grid-column: 1 / 2;
+        grid-row: 3 / 4;
+      }
+
+      section#pull-requests {
+        grid-column: 2 / 3;
+        grid-row: 3 / 4;
+
+        h5, ul {
+          margin-left: 2.25rem;
+        }
+      }
+    }
+
+    @media (min-width: 60rem) {
+      grid-template-columns: 1fr 2fr 3fr;
+
+      section#total-commits {
+        grid-column: 1 / 2;
+        grid-row: 2 / 3;
+      }
+
+      section#branches {
+        grid-column: 2 / 3;
+        grid-row: 2 / 3;
+      }
+
+      section#pull-requests {
+        grid-column: 3 / 4;
+        grid-row: 2 / 3;
+      }
     }
   }
 
@@ -181,29 +244,68 @@
     display:flex;
     flex-direction:column;
     gap:.5rem;
+    margin:0;
     
-
     li {
       display:flex;
-      align-items:center;
+      align-items:end;
       gap:.25rem;
+
+      img {
+        margin-right: .25rem;
+      }
+
+      a {
+        display:flex;
+        align-items:start;
+        gap:.25rem 0;
+        text-decoration: none;
+        
+        small {
+          white-space: nowrap;
+        }
+
+        &:hover {
+          text-decoration: underline;
+        }
+
+        .label {
+          font-size: .75rem;
+          --_bgcolor: var(--darkgrey);
+          background: var(--_bgcolor);
+          border-radius:.25rem;
+          padding:0 .25rem;
+        }
+
+        &:hover .nr {
+          --_bgcolor:var(--green);
+        }
+
+        &:hover .author {
+          --_bgcolor:var(--purple);
+        }
+
+        &:hover .merged {
+          --_bgcolor:var(--yellow);
+        }
+      }
     }
   }
 
-  .label {
-    font-size: .75rem;
-    --_bgcolor: var(--green);
-    background: var(--_bgcolor);
-    border-radius:.25rem;
-    padding:0 .25rem;
+  h4, h5 {
+    display:flex;
+    gap:.25rem;
+    margin-bottom: .5rem;
+    align-items:end;
   }
 
-  .author {
-    --_bgcolor:var(--purple);
-  }
+  h5 {
+    align-items: center;
 
-  .merged {
-    --_bgcolor:var(--yellow);
+    small {
+      align-self:start;
+      opacity:.6;
+    }
   }
 
 
