@@ -6,7 +6,7 @@
   let { org, repo, branches = [], teamMembers = [], totalCommits = {}, openPRs, closedPRs, pullRequestsByMember } = data;
 
   const memberMap = {};
-  teamMembers.forEach(m => memberMap[m.login] = m);
+  teamMembers.forEach(member => memberMap[member.login] = member);
 </script>
 
 <section class="simple-text simple-grid">
@@ -32,7 +32,7 @@
     <ul class="members">
       {#each Object.entries(totalCommits).sort((a,b)=>b[1]-a[1]) as [login, count]}
         <li>
-          <img src={memberMap[login]?.avatar_url} width="32" height="32" alt={login} class="avatar" />
+          <img src={memberMap[login].avatar_url} width="32" height="32" alt={login} class="avatar" />
           <strong>{login}</strong> 
           <small>{count} commits</small>
           <!-- PRs: {pullRequestStats[login]?.open ?? 0} open / {pullRequestStats[login]?.closed ?? 0} closed -->
@@ -60,7 +60,7 @@
             <ul class="members">
               {#each Object.entries(branch.memberCommitCounts).sort((a,b)=>b[1]-a[1]) as [login, count]}
                 <li>
-                  <img src={memberMap[login]?.avatar_url} width="32" height="32" alt={login} class="avatar" />
+                  <img src={memberMap[login].avatar_url} width="32" height="32" alt={login} class="avatar" />
                   <strong>{login}</strong>: {count} commits
                 </li>
               {/each}
@@ -95,10 +95,9 @@
     <h3><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-git-pull-request"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M6 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M18 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M6 8l0 8" /><path d="M11 6h5a2 2 0 0 1 2 2v8" /><path d="M14 9l-3 -3l3 -3" /></svg> Pull Requests</h3>
 
     {#each Object.entries(pullRequestsByMember) as [login, prs]}
-      {$inspect(prs)}
       <article>
         <h4>
-          <img src={memberMap[login]?.avatar_url} width="32" height="32" alt={login} class="avatar" />
+          <img src={memberMap[login].avatar_url} width="32" height="32" alt={login} class="avatar" />
           <span>{login}</span>
         </h4>
         {#if prs.open.length > 0}
