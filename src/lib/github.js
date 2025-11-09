@@ -161,24 +161,31 @@ export async function fetchRepoPullRequests(org, repo, token) {
   }
 }
 
-export async function fetchRepoMetadata(owner, repo, token) {
-  const url = `${API}/repos/${owner}/${repo}/contents/repo_metadata.yml?ref=main`
-  console.log('Fetching repo metadata from:', url)
+export async function fetchRepoMetadata(owner, repo, token, branch = 'main') {
+  const url = `${API}/repos/${owner}/${repo}/contents/repo_metadata.yml?ref=${encodeURIComponent(branch)}`;
+  console.log('Fetching repo metadata from:', url);
 
   try {
-    const yamlText = await ghFetch(url, token, { raw: true })
+    const yamlText = await ghFetch(url, token, { raw: true });
 
-    if (!yamlText || yamlText.trim().length === 0) {
-      console.warn(`No repo_metadata.yml content found for ${owner}/${repo}`)
-      return {}
+    if (!yamlText || !yamlText.trim()) {
+      // Empty or missing content is treated as no metadata
+      return {};
     }
 
-    const meta = yaml.load(yamlText)
-    return meta || {}
-
+    const meta = yaml.load(yamlText);
+    return meta || {};
   } catch (err) {
-    console.error(`❌ Failed to fetch metadata for ${owner}/${repo}:`, err)
-    return {}
+    // If the file doesn't exist, ghFetch will throw with a 404 message.
+    const message = err?.message || '';
+    if (message.includes('GitHub request failed: 404')) {
+      console.warn(`repo_metadata.yml not found for ${owner}/${repo}@${branch}`);
+      return {};
+    }
+
+    // Any other error (401/403/rate limits/etc.) also returns empty metadata
+    console.error(`❌ Failed to fetch metadata for ${owner}/${repo}@${branch}:`, err);
+    return {};
   }
 }
 
