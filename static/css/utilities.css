@@ -334,7 +334,7 @@ IMAGE WITH TEXT
 
 @media (max-width: 1024px) {
     .image-with-text {
-        padding: 4rem var(--padding-side) 0;
+        padding: 1rem var(--padding-side) 0;
     }
 }
 
@@ -567,7 +567,7 @@ SIMPLE TEXT
 
 @media (max-width: 1024px) {
     .simple-text {
-        padding: 4rem var(--padding-side) 0;
+        padding: 1rem var(--padding-side) 0;
     }
 }
 
