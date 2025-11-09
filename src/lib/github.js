@@ -1,11 +1,13 @@
+import yaml from 'js-yaml';
+
 const API = "https://api.github.com";
 
-export async function ghFetch(url, token) {
+export async function ghFetch(url, token, { raw = false, returnResponse = false } = {}) {
   const res = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,
       'User-Agent': 'github-fdnd-agency-insights',
-      Accept: 'application/vnd.github+json'
+      Accept: raw ? 'application/vnd.github.v3.raw' : 'application/vnd.github+json'
     }
   });
 
@@ -13,8 +15,10 @@ export async function ghFetch(url, token) {
     throw new Error(`GitHub request failed: ${res.status} ${res.statusText}`);
   }
 
-  return res.json();
+  if (returnResponse) return res;
+  return raw ? res.text() : res.json();
 }
+
 
 export async function fetchOrgTeams(org, token) {
   return ghFetch(`${API}/orgs/${org}/teams?per_page=100`, token);
@@ -34,21 +38,8 @@ export async function fetchRepoBranches(org, repo, token) {
 
 export async function fetchCommitCount(org, repo, branch, username, token) {
   try {
-    const res = await fetch(
-      `${API}/repos/${org}/${repo}/commits?sha=${branch}&author=${username}&per_page=1`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'User-Agent': 'github-fdnd-agency-insights',
-          Accept: 'application/vnd.github+json'
-        }
-      }
-    );
-
-    if (!res.ok) {
-      console.error(`Failed to fetch commits: ${res.status}`);
-      return 0;
-    }
+    const url = `${API}/repos/${org}/${repo}/commits?sha=${branch}&author=${username}&per_page=1`;
+    const res = await ghFetch(url, token, true);
 
     const commits = await res.json();
     const link = res.headers.get('Link');
@@ -58,8 +49,7 @@ export async function fetchCommitCount(org, repo, branch, username, token) {
     const match = link.match(/&page=(\d+)>; rel="last"/);
     if (!match) return commits.length;
 
-    const lastPage = parseInt(match[1], 10);
-    return lastPage;
+    return parseInt(match[1], 10);
 
   } catch (err) {
     console.error(`Failed to fetch commits for ${username} on ${branch}:`, err);
@@ -76,8 +66,6 @@ export async function fetchRepoContributors(org, repo, token) {
 }
 
 export async function fetchCommitDetails(org, repo, sha, token) {
-  const API = "https://api.github.com";
-
   try {
     const data = await ghFetch(`${API}/repos/${org}/${repo}/commits/${sha}`, token);
 
@@ -173,6 +161,26 @@ export async function fetchRepoPullRequests(org, repo, token) {
   }
 }
 
+export async function fetchRepoMetadata(owner, repo, token) {
+  const url = `${API}/repos/${owner}/${repo}/contents/repo_metadata.yml?ref=main`
+  console.log('Fetching repo metadata from:', url)
+
+  try {
+    const yamlText = await ghFetch(url, token, { raw: true })
+
+    if (!yamlText || yamlText.trim().length === 0) {
+      console.warn(`No repo_metadata.yml content found for ${owner}/${repo}`)
+      return {}
+    }
+
+    const meta = yaml.load(yamlText)
+    return meta || {}
+
+  } catch (err) {
+    console.error(`❌ Failed to fetch metadata for ${owner}/${repo}:`, err)
+    return {}
+  }
+}
 
 
 

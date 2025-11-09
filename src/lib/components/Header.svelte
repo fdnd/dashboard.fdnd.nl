@@ -297,7 +297,6 @@ ul {
 
 @media (max-width: 870px) {
     ul {
-        flex-grow: 1;
         padding-right: 1.25rem;
     }
 }

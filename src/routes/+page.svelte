@@ -5,8 +5,6 @@
   let { org, repos } = data
 </script>
 
-
-
 <section class="simple-text">
   <header>
     <Breadcrumb items={[{ label: 'Dashboard', home:true }]} />
@@ -21,41 +19,89 @@
     </a>
   </p>
 
-  <ul>
-    {#each repos as repo}
-      <li>
-        <a href={`/${repo.name}`}>{repo.name}</a> 
-      </li>
-    {/each}
-  </ul>
+ 
+  {#each repos as repo}
+  <a href={`/${repo.name}`}>
+    <article>
+      <h3>
+      {#if repo.metadata && Object.keys(repo.metadata).length > 0}
+        {repo.metadata.title}
+      {:else}
+        {repo.name}
+      {/if}
+      </h3>
+
+      {#if repo.team?.members && repo.team.members.length > 0}
+        <ul>
+          {#each repo.team.members as member}
+            <li>
+              <img width="24" height="24" src="{member.avatar_url}" class="avatar" alt="{member.login}">
+              <span>{member.login}</span>
+            </li>
+          {/each}
+        </ul>
+      {/if}
+      </article>
+    </a>
+  {/each}
 </section>
 
-<style>
-  ul {
-    display:flex;
-    gap:.5rem;
-    align-items:start;
-    flex-wrap: wrap;
-    max-width:80%;
 
-    li {
+<style>
+  section {
+    display:flex;
+    flex-direction: column;
+    gap:1rem;
+
+    header, p {
+      grid-column: 1 / -1;
+    }
+
+    @media (min-width: 40rem) {
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      place-items:stretch;
+    }
+
+    @media (min-width: 60rem) {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+  }
+
+  a {
+    text-decoration:none;
+    border-radius: var(--radius);
+
+    &:hover {
+      background-color: var(--accent-color-2);
+    }
+
+    article {
+      display:flex;
+      flex-direction: column;
+      justify-content:start;
+      gap:.5rem;
       border: 1px solid currentColor;
       border-radius: var(--small-radius);
       display:flex;
-      overflow: hidden;
+      padding:1rem;
+      height:100%;
 
-      a {
-        padding:.5rem;
-        text-decoration:none;
-        background-color: var(--green);
+      h3::first-letter {
+        text-transform: capitalize;
       }
 
-      a:hover {
-        background-color: var(--purple);
-      }
+      ul {
+        display:flex;
+        flex-wrap:wrap;
+        gap:.5rem;
 
-    }
-    
-    
+        li {
+          display:flex;
+          gap:.25rem;
+        }
+      }      
+    } 
   }
+  
 </style>
