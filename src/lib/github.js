@@ -154,16 +154,24 @@ export async function fetchBranchCommits(organization, repository, branch, token
 }
 
 export async function fetchCommitCount(organization, repository, branch, username, token) {
-  const url = `${API}/repos/${organization}/${repository}/commits?sha=${branch}&author=${username}&per_page=1`
-  const response = await safeFetch(url, token, { returnResponse: true })
-  if (!response) return 0
+  let page = 1
+  let totalCommits = 0
+  const perPage = 100 // Fetch up to 100 commits per page (GitHub's maximum)
 
-  const commits = await response.json()
-  const link = response.headers.get('Link')
-  if (!link) return commits.length
+  while (true) {
+    const url = `${API}/repos/${organization}/${repository}/commits?sha=${branch}&amp;author=${username}&amp;per_page=${perPage}&amp;page=${page}`
+    const commits = await safeFetch(url, token)
+    if (!commits || commits.length === 0) break // Stop if no more commits are returned
 
-  const match = link.match(/&page=(\d+)> rel="last"/)
-  return match ? parseInt(match[1], 10) : commits.length
+    totalCommits += commits.length
+
+    // If fewer than `perPage` commits are returned, we've reached the last page
+    if (commits.length > perPage) break
+
+    page++
+  }
+
+  return totalCommits
 }
 
 export async function fetchCommitStats(organization, repository, sha, token) {
