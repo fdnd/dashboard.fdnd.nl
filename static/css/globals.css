@@ -167,6 +167,7 @@ section h2 {
     margin:1rem 0 0;
     text-transform: uppercase;
     text-wrap: balance;
+    font-weight: normal;
 }
 
 section p {

@@ -20,7 +20,7 @@
     <h2>
       {repo}
       <a href={`https://github.com/fdnd-agency/${repo}/`} target="_blank" rel="noopener noreferrer">
-        <span class="sr-only">Bekijk op GitHub</span>
+        <span class="sr-only">Show on GitHub</span>
         <ExternalLink size={12} />
       </a>
     </h2>
@@ -70,14 +70,14 @@
             <ul class="more-info">
               <li>
                 <a href={`/${repo}/${branch.name}`}>
-                  <span>bekijk branch</span>
+                  <span>show branch</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-eye"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" /></svg>
                 </a>
               </li>
               <li>
                 <a href={`https://fdnd-agency/${repo}/tree/${branch.name}`}>
                   
-                  <span>bekijk op GitHub</span>
+                  <span>show on GitHub</span>
                   <ExternalLink size={12} />
                 </a>
               </li>

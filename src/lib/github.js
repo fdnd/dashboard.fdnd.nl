@@ -39,9 +39,9 @@ export async function fetchRepoBranches(org, repo, token) {
 export async function fetchCommitCount(org, repo, branch, username, token) {
   try {
     const url = `${API}/repos/${org}/${repo}/commits?sha=${branch}&author=${username}&per_page=1`;
-    const res = await ghFetch(url, token, true);
+    const res = await ghFetch(url, token, { returnResponse: true }); // Pass the option as an object
 
-    const commits = await res.json();
+    const commits = await res.json(); // Parse the response here
     const link = res.headers.get('Link');
 
     if (!link) return commits.length;
