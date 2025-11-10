@@ -8,14 +8,13 @@
 <section class="simple-text">
   <header>
     <Breadcrumb items={[{ label: 'Dashboard', home:true }]} />
-    <h2>FDND Agency Projects</h2>
-    <p>
-      This is a list of active projects on 
+    <h2>
+      FDND Agency Projects
       <a href="https://github.com/fdnd-agency/" target="_blank" rel="noopener noreferrer">
-        FDND Agency
+       Show on GtHub
         <ExternalLink size={12} />
       </a>
-    </p>
+    </h2>
   </header>
   
   {#each repos as repo}
@@ -30,11 +29,6 @@
         {/if}
         </h3>
       </header>
-      
-      
-      <!-- <p>
-        {repo.description}
-      </p> -->
 
       <div class="details">
       {#if repo.team?.members && repo.team.members.length > 0}
@@ -69,25 +63,33 @@
             </li>
           </ul>
         </div>
-        {/if}
-      </div>
 
-      {#if repo.metadata && Object.keys(repo.metadata).length > 0}
-      <footer>
-        <div class="meta">
-          <h4 class="sr-only">Tech stack</h4>
-          <ul class="tech-stack">
+        <div>
+          <h4>Tech stack</h4>
+          <ul>
             {#each repo.metadata.tech_stack as item}
               <li>{item}</li>
             {/each}
           </ul>
         </div>
-        
+        {/if}
+      </div>
 
-        <a href={`/${repo.name}`}>
-          Show repository
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-eye"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" /></svg>
-        </a>
+      {#if repo.metadata && Object.keys(repo.metadata).length > 0}
+      <footer>
+        <ul>
+          <li>
+            <a href={`/${repo.name}`}>
+              Show repository
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-eye"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" /></svg>
+            </a>
+            <a href={`https://github.com/fdnd-agency/${repo.name}`}>
+              Show on GitHub
+              <ExternalLink size={16} />
+            </a>
+          </li>
+        </ul>
+        
       </footer>
       {/if}
       </article>
@@ -102,8 +104,12 @@
     flex-direction: column;
     gap:1rem;
 
-    header, p {
+    header {
       grid-column: 1 / -1;
+
+      h2 a {
+        font-size: .9rem;
+      }
     }
 
     @media (min-width: 40rem) {
@@ -142,19 +148,30 @@
       }
 
       h4{
-        margin-bottom: 0;
+        margin-bottom: .5rem;
       }
 
       div.details {
         display:grid;
-        grid-template-columns: 2fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr;
         gap:1rem;
+        align-items: start;
         margin-bottom: 1rem;
 
-        div:last-of-type {
-          border-left:1px solid var(--blue-20);
-          padding-left:1rem;
+        div {
+          border-right:1px solid var(--blue-20);
+          padding-right:1rem;
+
+          &:last-child {
+            border:none;
+            padding:0;
+          }
+
+          ul {
+            margin-bottom: 0;
+          }
         }
+
       }
 
       ul {
@@ -170,20 +187,7 @@
         }
       }
 
-      ul.tech-stack {
-        margin-top: auto;
-        margin-bottom: 0;
-        font-size: .8em;
-        flex-direction: row;
-
-        li {
-          border:1px solid var(--blue);
-          padding:0 .25rem;
-          border-radius:.5rem;
-          background-color: rgb(255,255,255,.25);
-          font-size:.9rem;
-        }
-      }
+      
 
       footer {
         background-color: var(--accent-color-1);
@@ -192,13 +196,30 @@
         border-radius: 0 0 var(--small-radius) var(--small-radius);
         border-top:1px solid currentColor;
         display:flex;
-        justify-content: space-between;
+        justify-content: end;
+
+        ul {
+          margin:0;
+          flex-direction: row;
+
+          li {
+            font-size:.9rem;
+          }
+        }
 
         a {
-          font-size: .9rem;
+          text-decoration: none;
           display: flex;
           gap:.25rem;
           align-items: center;
+          border:1px solid var(--blue);
+          padding:0 .25rem;
+          border-radius:.5rem;
+          background-color: rgb(255,255,255,.25);
+
+          &:hover, &:focus-visible {
+            background-color:var(--accent-color-2);
+          }
         }
       }
 

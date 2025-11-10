@@ -264,10 +264,9 @@
         align-items:start;
         gap:.25rem 0;
         text-decoration: none;
+        line-height:1.4;
         
-        small {
-          white-space: nowrap;
-        }
+        
 
         &:hover {
           text-decoration: underline;
@@ -280,18 +279,11 @@
           border-radius:.25rem;
           padding:0 .25rem;
         }
+      }
 
-        &:hover .nr {
-          --_bgcolor:var(--green);
-        }
-
-        &:hover .author {
-          --_bgcolor:var(--purple);
-        }
-
-        &:hover .merged {
-          --_bgcolor:var(--yellow);
-        }
+      small {
+        white-space: nowrap;
+        line-height:1.6;
       }
     }
   }
