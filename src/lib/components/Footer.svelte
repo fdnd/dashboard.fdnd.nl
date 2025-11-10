@@ -39,7 +39,8 @@
 
 <style>
 footer {
-    color: var(--background)
+    color: var(--background);
+    padding-top:4rem;
 }
 
 ul {

@@ -154,16 +154,16 @@ export async function fetchBranchCommits(organization, repository, branch, token
 }
 
 export async function fetchCommitCount(organization, repository, branch, username, token) {
-  const url = `${API}/repos/${organization}/${repository}/commits?sha=${branch}&amp;author=${username}&amp;per_page=1`
-  const response = await safeFetch(url, token, { returnResponse: true })
-  if (!response) return 0
+  const url = `${API}/repos/${organization}/${repository}/commits?sha=${branch}&author=${username}&per_page=1`;
+  const response = await safeFetch(url, token, { returnResponse: true });
+  if (!response) return 0;
 
-  const commits = await response.json()
-  const link = response.headers.get('Link')
-  if (!link) return commits.length
+  const commits = await response.json();
+  const link = response.headers.get('Link');
+  if (!link) return commits.length;
 
-  const match = link.match(/&amp;page=(\d+)&gt;; rel="last"/)
-  return match ? parseInt(match[1], 10) : commits.length
+  const match = link.match(/&page=(\d+)>; rel="last"/);
+  return match ? parseInt(match[1], 10) : commits.length;
 }
 
 export async function fetchCommitStats(organization, repository, sha, token) {

@@ -29,26 +29,41 @@ aside {
   right:1rem;
   font-size: .7em;
 
-  summary {
-    background-color: var(--accent-color-3);
-  }
+  details {
+    summary {
+      background-color: var(--accent-color-3);
+      padding:.5rem 2rem .5rem .5rem;
 
-  details[open]::details-content {
-    padding:.5rem;
-    background-color: var(--accent-color-3);
-  }
+      &::before {
+        top:.5rem;
+        right: .5rem;
+        height: 1.25rem;
+        width: 1.25rem;
 
-  h2 {
-    font-weight: normal;
-    display:flex;
-    align-items: center;
-    font-size: 1.25em;
-    gap:.25rem;
-  }
+        svg {
+          stroke: 1px;
+        }
+      }
+    }
 
-  ul {
-    padding:0;
-    list-style: none;
+    &[open]::details-content {
+      padding:0 .5rem .5rem;
+      background-color: var(--accent-color-3);
+    }
+
+    h2 {
+      font-weight: normal;
+      display:flex;
+      align-items: center;
+      font-size: 1.25em;
+      gap:.25rem;
+    }
+
+    ul {
+      padding:0;
+      margin-top: 0;
+      list-style: none;
+    }
   }
 }
 </style>

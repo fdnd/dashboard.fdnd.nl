@@ -168,6 +168,10 @@ section h2 {
     margin:1rem 0 0;
     text-wrap: balance;
     font-weight: normal;
+
+    &::first-letter {
+        text-transform:capitalize;
+    }
 }
 
 section p {

@@ -7,8 +7,6 @@
 
   const memberMap = {};
   teamMembers.forEach(member => memberMap[member.login] = member);
-
-  console.log(repo)
 </script>
 
 <section class="simple-text simple-grid">

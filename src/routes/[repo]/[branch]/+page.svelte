@@ -60,7 +60,9 @@
   overflow-x:auto;
 }
 table {
-  border-collapse: collapse;
+  border:1px solid currentColor;
+  border-radius:var(--radius);
+  margin: 1rem 0;
 
   tr:nth-of-type(even) {
     background-color: rgb(0,0,0,.025);
