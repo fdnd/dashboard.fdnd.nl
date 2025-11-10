@@ -11,7 +11,7 @@
     <h2>
       FDND Agency Projects
       <a href="https://github.com/fdnd-agency/" target="_blank" rel="noopener noreferrer">
-       Show on GtHub
+       Show on GitHub
         <ExternalLink size={12} />
       </a>
     </h2>
