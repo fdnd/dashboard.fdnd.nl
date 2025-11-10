@@ -1,16 +1,15 @@
-import { GITHUB_ORGANIZATION, GITHUB_TOKEN } from '$env/static/private';
-import { fetchBranchCommits } from '$lib/github';
+import { GITHUB_ORGANIZATION, GITHUB_TOKEN } from '$env/static/private'
+import { fetchBranchCommits } from '$lib/github'
 
-export const prerender = false;
+export const prerender = false
 
 export async function load({ params }) {
-  const org = GITHUB_ORGANIZATION;
-  const token = GITHUB_TOKEN;
-  const repo = params.repo;
-  const branch = params.branch;
+  const org = GITHUB_ORGANIZATION
+  const token = GITHUB_TOKEN
+  const repo = params.repo
+  const branch = params.branch
 
-  const commits = await fetchBranchCommits(org, repo, branch, token, 50); // fetch latest 50 commits
+  const commits = await fetchBranchCommits(org, repo, branch, token, 50)
 
-  // Each commit has a SHA now
-  return { org, repo, branch, commits };
+  return { org, repo, branch, commits }
 }

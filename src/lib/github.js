@@ -1,6 +1,6 @@
-import yaml from 'js-yaml';
+import yaml from 'js-yaml'
 
-const API = "https://api.github.com";
+const API = "https://api.github.com"
 
 /**
  * Helper function to fetch data from GitHub API
@@ -70,7 +70,7 @@ export async function fetchRepoContributors(organization, repository, token) {
 }
 
 export async function fetchRepoPullRequests(organization, repository, token) {
-  const url = `${API}/repos/${organization}/${repository}/pulls?state=all&amp;per_page=100`
+  const url = `${API}/repos/${organization}/${repository}/pulls?state=all&ampper_page=100`
   const pullRequests = await safeFetch(url, token)
   return pullRequests
     ? pullRequests.map((pullRequest) => ({
@@ -131,7 +131,7 @@ export async function fetchBranchCommits(organization, repository, branch, token
   const perPage = Math.min(100, remaining)
 
   while (remaining > 0) {
-    const url = `${API}/repos/${organization}/${repository}/commits?sha=${branch}&amp;per_page=${perPage}&amp;page=${page}`
+    const url = `${API}/repos/${organization}/${repository}/commits?sha=${branch}&ampper_page=${perPage}&amppage=${page}`
     const response = await safeFetch(url, token)
     if (!response || response.length === 0) break
 
@@ -154,16 +154,16 @@ export async function fetchBranchCommits(organization, repository, branch, token
 }
 
 export async function fetchCommitCount(organization, repository, branch, username, token) {
-  const url = `${API}/repos/${organization}/${repository}/commits?sha=${branch}&author=${username}&per_page=1`;
-  const response = await safeFetch(url, token, { returnResponse: true });
-  if (!response) return 0;
+  const url = `${API}/repos/${organization}/${repository}/commits?sha=${branch}&author=${username}&per_page=1`
+  const response = await safeFetch(url, token, { returnResponse: true })
+  if (!response) return 0
 
-  const commits = await response.json();
-  const link = response.headers.get('Link');
-  if (!link) return commits.length;
+  const commits = await response.json()
+  const link = response.headers.get('Link')
+  if (!link) return commits.length
 
-  const match = link.match(/&page=(\d+)>; rel="last"/);
-  return match ? parseInt(match[1], 10) : commits.length;
+  const match = link.match(/&page=(\d+)> rel="last"/)
+  return match ? parseInt(match[1], 10) : commits.length
 }
 
 export async function fetchCommitStats(organization, repository, sha, token) {

@@ -2,11 +2,11 @@
 <script>
   import Breadcrumb from '$lib/components/Breadcrumb.svelte'
   import ExternalLink from '$lib/icons/ExternalLink.svelte'
-  let {data} = $props();
-  let { org, repo, branches = [], teamMembers = [], totalCommits = {}, openPRs, closedPRs, pullRequestsByMember } = data;
+  let {data} = $props()
+  let { org, repo, branches = [], teamMembers = [], totalCommits = {}, openPRs, closedPRs, pullRequestsByMember } = data
 
-  const memberMap = {};
-  teamMembers.forEach(member => memberMap[member.login] = member);
+  const memberMap = {}
+  teamMembers.forEach(member => memberMap[member.login] = member)
 </script>
 
 <section class="simple-text simple-grid">
@@ -148,7 +148,6 @@
 
 
 </section>
-
 
 <style>
   .simple-grid {
