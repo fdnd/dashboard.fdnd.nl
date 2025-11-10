@@ -31,7 +31,7 @@
       </header>
 
       <div class="details">
-      {#if repo.team?.members && repo.team.members.length > 0}
+        {#if repo.team?.members && repo.team.members.length > 0}
         <div>
           <h4>Team</h4>
           <ul>
@@ -68,7 +68,7 @@
           <h4>Tech stack</h4>
           <ul>
             {#each repo.metadata.tech_stack as item}
-              <li>{item}</li>
+              <li><code><a href="/">{item}</a></code></li>
             {/each}
           </ul>
         </div>
@@ -184,6 +184,12 @@
         li {
           display:flex;
           gap:.25rem;
+
+          a {
+            display:flex;
+            align-items:center;
+            gap:.25rem;
+          }
         }
       }
 
