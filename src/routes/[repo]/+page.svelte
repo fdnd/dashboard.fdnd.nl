@@ -27,7 +27,10 @@
   </header>
   
   <section class="totals" id="total-commits">
-    <h3><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-git-commit"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /><path d="M12 3l0 6" /><path d="M12 15l0 6" /></svg> Total Commits</h3>
+    <h3>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-git-commit"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /><path d="M12 3l0 6" /><path d="M12 15l0 6" /></svg> 
+      Total Commits
+    </h3>
 
     <ul class="members">
       {#each Object.entries(totalCommits).sort((a,b)=>b[1]-a[1]) as [login, count]}
@@ -165,6 +168,13 @@
 
       h3 {
         margin-bottom: 1rem;
+        display:flex;
+        align-items:center;
+        gap:1rem;
+
+        svg {
+          translate: 5px 0;
+        }
       }
 
       div.body {
