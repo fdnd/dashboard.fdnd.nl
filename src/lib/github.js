@@ -2,191 +2,174 @@ import yaml from 'js-yaml';
 
 const API = "https://api.github.com";
 
+/**
+ * Helper function to fetch data from GitHub API
+ */
 export async function ghFetch(url, token, { raw = false, returnResponse = false } = {}) {
-  const res = await fetch(url, {
+  const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,
       'User-Agent': 'github-fdnd-agency-insights',
       Accept: raw ? 'application/vnd.github.v3.raw' : 'application/vnd.github+json'
     }
-  });
+  })
 
-  if (!res.ok) {
-    throw new Error(`GitHub request failed: ${res.status} ${res.statusText}`);
-  }
-
-  if (returnResponse) return res;
-  return raw ? res.text() : res.json();
+  if (!response.ok) throw new Error(`GitHub request failed: ${response.status} ${response.statusText}`)
+  return returnResponse ? response : raw ? response.text() : response.json()
 }
 
-
-export async function fetchOrgTeams(org, token) {
-  return ghFetch(`${API}/orgs/${org}/teams?per_page=100`, token);
-}
-
-export async function fetchTeamRepos(org, team_slug, token) {
-  return ghFetch(`${API}/orgs/${org}/teams/${team_slug}/repos?per_page=100`, token);
-}
-
-export async function fetchTeamMembers(org, team_slug, token) {
-  return ghFetch(`${API}/orgs/${org}/teams/${team_slug}/members?per_page=100`, token);
-}
-
-export async function fetchRepoBranches(org, repo, token) {
-  return ghFetch(`${API}/repos/${org}/${repo}/branches?per_page=100`, token);
-}
-
-export async function fetchCommitCount(org, repo, branch, username, token) {
+/**
+ * Helper function to safely fetch data and handle errors
+ */
+async function safeFetch(url, token, options = {}) {
   try {
-    const url = `${API}/repos/${org}/${repo}/commits?sha=${branch}&author=${username}&per_page=1`;
-    const res = await ghFetch(url, token, { returnResponse: true }); // Pass the option as an object
-
-    const commits = await res.json(); // Parse the response here
-    const link = res.headers.get('Link');
-
-    if (!link) return commits.length;
-
-    const match = link.match(/&page=(\d+)>; rel="last"/);
-    if (!match) return commits.length;
-
-    return parseInt(match[1], 10);
-
-  } catch (err) {
-    console.error(`Failed to fetch commits for ${username} on ${branch}:`, err);
-    return 0;
+    return await ghFetch(url, token, options)
+  } catch (error) {
+    console.error(`Failed to fetch from ${url}:`, error)
+    return null
   }
 }
 
-export async function fetchRepoTeams(org, repo, token) {
-  return ghFetch(`${API}/repos/${org}/${repo}/teams?per_page=100`, token);
+/**
+ * Organization level
+ */
+export async function fetchOrgTeams(organization, token) {
+  const url = `${API}/orgs/${organization}/teams?per_page=100`
+  return ghFetch(url, token)
 }
 
-export async function fetchRepoContributors(org, repo, token) {
-  return ghFetch(`${API}/repos/${org}/${repo}/contributors?per_page=100`, token);
+/**
+ * Team level
+ */
+export async function fetchTeamRepos(organization, team, token) {
+  const url = `${API}/orgs/${organization}/teams/${team}/repos?per_page=100`
+  return ghFetch(url, token)
 }
 
-export async function fetchCommitDetails(org, repo, sha, token) {
+export async function fetchTeamMembers(organization, team, token) {
+  const url = `${API}/orgs/${organization}/teams/${team}/members?per_page=100`
+  return ghFetch(url, token)
+}
+
+/**
+ * Repository level
+ */
+export async function fetchRepoBranches(organization, repository, token) {
+  const url = `${API}/repos/${organization}/${repository}/branches?per_page=100`
+  return ghFetch(url, token)
+}
+
+export async function fetchRepoTeams(organization, repository, token) {
+  const url = `${API}/repos/${organization}/${repository}/teams?per_page=100`
+  return ghFetch(url, token)
+}
+
+export async function fetchRepoContributors(organization, repository, token) {
+  const url = `${API}/repos/${organization}/${repository}/contributors?per_page=100`
+  return ghFetch(url, token)
+}
+
+export async function fetchRepoPullRequests(organization, repository, token) {
+  const url = `${API}/repos/${organization}/${repository}/pulls?state=all&amp;per_page=100`
+  const pullRequests = await safeFetch(url, token)
+  return pullRequests
+    ? pullRequests.map((pullRequest) => ({
+        id: pullRequest.id,
+        number: pullRequest.number,
+        title: pullRequest.title,
+        user: pullRequest.user?.login ?? 'unknown',
+        state: pullRequest.state,
+        html_url: pullRequest.html_url,
+        merged_at: pullRequest.merged_at,
+        created_at: pullRequest.created_at,
+        updated_at: pullRequest.updated_at
+      }))
+    : []
+}
+
+export async function fetchRepoMetadata(owner, repository, token, branch = 'main') {
+  const url = `${API}/repos/${owner}/${repository}/contents/repo_metadata.yml?ref=${encodeURIComponent(branch)}`
+  const yamlText = await safeFetch(url, token, { raw: true })
+  if (!yamlText || !yamlText.trim()) return {}
   try {
-    const data = await ghFetch(`${API}/repos/${org}/${repo}/commits/${sha}`, token);
-
-    return {
-      sha: data.sha,
-      author: data.commit?.author?.name ?? data.author?.login,
-      avatar_url: data.author?.avatar_url ?? null,
-      message: data.commit?.message,
-      date: data.commit?.author?.date,
-      stats: data.stats ?? { total: 0, additions: 0, deletions: 0 },
-      files: data.files?.map(f => ({
-        filename: f.filename,
-        additions: f.additions,
-        deletions: f.deletions,
-        changes: f.changes
-      })) ?? []
-    };
-  } catch (err) {
-    console.error(`Failed to fetch commit details for ${repo}@${sha}:`, err);
-    throw new Error(`Could not load commit details`);
+    return yaml.load(yamlText) || {}
+  } catch (error) {
+    console.error(`Failed to parse YAML for ${owner}/${repository}@${branch}:`, error)
+    return {}
   }
 }
 
-export async function fetchBranchCommits(org, repo, branch, token, maxCommits = 100) {
-  const commits = [];
-  let page = 1;
-  let remaining = maxCommits;
-  const perPage = Math.min(100, remaining);
+/**
+ * Commit-related functions
+ */
+export async function fetchCommitDetails(organization, repository, sha, token) {
+  const url = `${API}/repos/${organization}/${repository}/commits/${sha}`
+  const data = await safeFetch(url, token)
+  return data
+    ? {
+        sha: data.sha,
+        author: data.commit?.author?.name ?? data.author?.login,
+        avatar_url: data.author?.avatar_url ?? null,
+        message: data.commit?.message,
+        date: data.commit?.author?.date,
+        stats: data.stats ?? { total: 0, additions: 0, deletions: 0 },
+        files:
+          data.files?.map((file) => ({
+            filename: file.filename,
+            additions: file.additions,
+            deletions: file.deletions,
+            changes: file.changes
+          })) ?? []
+      }
+    : null
+}
+
+export async function fetchBranchCommits(organization, repository, branch, token, maxCommits = 100) {
+  const commits = []
+  let page = 1
+  let remaining = maxCommits
+  const perPage = Math.min(100, remaining)
 
   while (remaining > 0) {
-    try {
-      const res = await ghFetch(
-        `https://api.github.com/repos/${org}/${repo}/commits?sha=${branch}&per_page=${perPage}&page=${page}`,
-        token
-      );
+    const url = `${API}/repos/${organization}/${repository}/commits?sha=${branch}&amp;per_page=${perPage}&amp;page=${page}`
+    const response = await safeFetch(url, token)
+    if (!response || response.length === 0) break
 
-      if (res.length === 0) break;
+    commits.push(
+      ...response.map((commit) => ({
+        sha: commit.sha,
+        message: commit.commit.message,
+        date: commit.commit.author.date,
+        author: commit.author?.login ?? commit.commit.author.name,
+        avatar_url: commit.author?.avatar_url ?? null
+      }))
+    )
 
-      commits.push(
-        ...res.map(c => ({
-          sha: c.sha,
-          message: c.commit.message,
-          date: c.commit.author.date,
-          author: c.author?.login ?? c.commit.author.name,
-          avatar_url: c.author?.avatar_url ?? null
-        }))
-      );
-
-      if (res.length < perPage) break; // last page
-      page++;
-      remaining -= res.length;
-    } catch (err) {
-      console.error(`Failed to fetch commits for branch ${branch} in ${repo}:`, err);
-      break;
-    }
+    if (response.length < perPage) break
+    page++
+    remaining -= response.length
   }
 
-  return commits;
+  return commits
 }
 
-export async function fetchCommitStats(org, repo, sha, token) {
-  try {
-    const commit = await ghFetch(`${API}/repos/${org}/${repo}/commits/${sha}`, token);
-    const filesChanged = commit.files?.length ?? 0;
-    return { filesChanged }; // ✅ only return files changed
-  } catch (err) {
-    console.error(`Failed to fetch stats for commit ${sha}:`, err);
-    return { filesChanged: 0 };
-  }
+export async function fetchCommitCount(organization, repository, branch, username, token) {
+  const url = `${API}/repos/${organization}/${repository}/commits?sha=${branch}&amp;author=${username}&amp;per_page=1`
+  const response = await safeFetch(url, token, { returnResponse: true })
+  if (!response) return 0
+
+  const commits = await response.json()
+  const link = response.headers.get('Link')
+  if (!link) return commits.length
+
+  const match = link.match(/&amp;page=(\d+)&gt;; rel="last"/)
+  return match ? parseInt(match[1], 10) : commits.length
 }
 
-export async function fetchRepoPullRequests(org, repo, token) {
-  try {
-    const prs = await ghFetch(
-      `${API}/repos/${org}/${repo}/pulls?state=all&per_page=100`,
-      token
-    );
-
-    return prs.map(pr => ({
-      id: pr.id,
-      number: pr.number,
-      title: pr.title,
-      user: pr.user?.login ?? 'unknown', // <-- make sure we have a string
-      state: pr.state,
-      html_url: pr.html_url,
-      merged_at: pr.merged_at,
-      created_at: pr.created_at,
-      updated_at: pr.updated_at
-    }));
-  } catch (err) {
-    console.error(`Failed to fetch PRs for ${repo}:`, err);
-    return [];
-  }
-}
-
-export async function fetchRepoMetadata(owner, repo, token, branch = 'main') {
-  const url = `${API}/repos/${owner}/${repo}/contents/repo_metadata.yml?ref=${encodeURIComponent(branch)}`;
-  console.log('Fetching repo metadata from:', url);
-
-  try {
-    const yamlText = await ghFetch(url, token, { raw: true });
-
-    if (!yamlText || !yamlText.trim()) {
-      // Empty or missing content is treated as no metadata
-      return {};
-    }
-
-    const meta = yaml.load(yamlText);
-    return meta || {};
-  } catch (err) {
-    // If the file doesn't exist, ghFetch will throw with a 404 message.
-    const message = err?.message || '';
-    if (message.includes('GitHub request failed: 404')) {
-      console.warn(`repo_metadata.yml not found for ${owner}/${repo}@${branch}`);
-      return {};
-    }
-
-    // Any other error (401/403/rate limits/etc.) also returns empty metadata
-    console.error(`❌ Failed to fetch metadata for ${owner}/${repo}@${branch}:`, err);
-    return {};
-  }
+export async function fetchCommitStats(organization, repository, sha, token) {
+  const url = `${API}/repos/${organization}/${repository}/commits/${sha}`
+  const commit = await safeFetch(url, token)
+  return { filesChanged: commit?.files?.length ?? 0 }
 }
 
 

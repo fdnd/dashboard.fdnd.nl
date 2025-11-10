@@ -5,6 +5,7 @@ html {
     --purple-10: rgb(166, 117, 245, 0.1);
     --blue: rgb(5, 5, 66);
     --blue-50: rgba(5, 5, 66, 0.5);
+    --blue-20: rgba(5, 5, 66, 0.2);
     --green: rgb(102, 229, 191);
     --green-10: rgb(102, 229, 191, 0.1);
 
@@ -165,7 +166,6 @@ main::after {
 
 section h2 {
     margin:1rem 0 0;
-    text-transform: uppercase;
     text-wrap: balance;
     font-weight: normal;
 }
