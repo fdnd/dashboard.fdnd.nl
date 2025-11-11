@@ -172,6 +172,10 @@ section h2 {
     &::first-letter {
         text-transform:capitalize;
     }
+
+    a {
+    font-size: .9rem;
+    }
 }
 
 section p {
