@@ -1,7 +1,15 @@
 
 <script>
   import Breadcrumb from '$lib/components/Breadcrumb.svelte'
-  import ExternalLink from '$lib/icons/ExternalLink.svelte'
+  import ExternalLinkIcon from '$lib/components/icons/ExternalLink.svelte'
+  import BranchesIcon from '$lib/components/icons/Branches.svelte'
+  import ViewIcon from '$lib/components/icons/View.svelte'
+  import PullRequestIcon from '$lib/components/icons/PullRequest.svelte'
+  import CommitsIcon from '$lib/components/icons/Commits.svelte'
+  import OpenPRsIcon from '$lib/components/icons/OpenPRs.svelte'
+  import ClosedPRsIcon from '$lib/components/icons/ClosedPRs.svelte'
+
+  
   let {data} = $props()
   let { org, repo, branches = [], teamMembers = [], totalCommits = {}, openPRs, closedPRs, pullRequestsByMember } = data
 
@@ -21,7 +29,7 @@
       {repo}
       <a href={`https://github.com/fdnd-agency/${repo}/`} target="_blank" rel="noopener noreferrer">
         <span>Show on GitHub</span>
-        <ExternalLink size={12} />
+        <ExternalLinkIcon size={12} />
       </a>
     </h2>
   </header>
@@ -29,7 +37,7 @@
   <section class="totals" id="total-commits">
     <h3>
       Total Commits
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-git-commit"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /><path d="M12 3l0 6" /><path d="M12 15l0 6" /></svg> 
+      <CommitsIcon />
     </h3>
 
     <ul class="members">
@@ -48,7 +56,7 @@
   <section id="branches">
     <h3>
       Branches
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-git-branch"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M7 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M17 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M7 8l0 8" /><path d="M9 18h6a2 2 0 0 0 2 -2v-5" /><path d="M14 14l3 -3l3 3" /></svg> 
+      <BranchesIcon />
     </h3>
 
     {#if branches.length === 0}
@@ -77,14 +85,14 @@
               <li>
                 <a href={`/${repo}/${branch.name}`}>
                   <span>branch details</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-eye"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" /></svg>
+                  <ViewIcon />
                 </a>
               </li>
               <li>
                 <a href={`https://fdnd-agency/${repo}/tree/${branch.name}`}>
                   
                   <span>show on GitHub</span>
-                  <ExternalLink size={12} />
+                  <ExternalLinkIcon size={12} />
                 </a>
               </li>
             </ul>
@@ -101,7 +109,7 @@
   <section id="pull-requests">
     <h3>
       Pull Requests
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-git-pull-request"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M6 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M18 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M6 8l0 8" /><path d="M11 6h5a2 2 0 0 1 2 2v8" /><path d="M14 9l-3 -3l3 -3" /></svg>
+      <PullRequestIcon />
     </h3>
 
     {#each Object.entries(pullRequestsByMember) as [login, prs]}
@@ -112,7 +120,7 @@
         </h4>
         {#if prs.open.length > 0}
           <h5>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-git-pull-request-draft"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M6 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M18 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M6 8v8" /><path d="M18 11h.01" /><path d="M18 6h.01" /></svg> 
+            <OpenPRsIcon />
             <span>Open <small>{prs.open.length}</small></span> 
           </h5>
           <ul>
@@ -131,7 +139,7 @@
 
         {#if prs.closed.length > 0}
           <h5>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-git-pull-request-closed"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M6 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M18 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M6 8v8" /><path d="M18 11v5" /><path d="M16 4l4 4m0 -4l-4 4" /></svg>
+            <ClosedPRsIcon />
             <span>Closed <small>{prs.closed.length}</small></span>
           </h5>
           <ul>
