@@ -1,6 +1,6 @@
 <script>
   import Breadcrumb from '$lib/components/Breadcrumb.svelte'
-  import ExternalLink from '$lib/icons/ExternalLink.svelte'
+  import ExternalLink from '$lib/components/icons/ExternalLink.svelte'
   let { data } = $props()
   let { org, repos } = data
 </script>
