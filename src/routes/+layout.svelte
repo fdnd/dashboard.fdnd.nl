@@ -3,7 +3,7 @@
 	import Header from '$lib/components/Header.svelte'
   import Footer from '$lib/components/Footer.svelte'
 	import RateLimit from '$lib/components/RateLimit.svelte'
-  
+
 	let { children, data } = $props()
 </script>
 

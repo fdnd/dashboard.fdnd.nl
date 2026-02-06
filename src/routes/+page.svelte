@@ -19,15 +19,42 @@
   
   {#each repos as repo}
   
-    <article>
+    <article class={repo.metadata?.status}>
       <header>
-        <h3>
+        <div>
+          <h3>
+            {#if repo.metadata && Object.keys(repo.metadata).length > 0}
+              <span>{repo.metadata.title}</span>
+            {:else}
+              <span>{repo.name}</span>
+            {/if}
+          </h3>
+
+          <ul>
+            {#each repo.metadata.years as year}
+              <li>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-school"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M22 9l-10 -4l-10 4l10 4l10 -4v6" /><path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4" /></svg>
+                <span>jaar {year}</span>
+              </li>
+            {/each}
+
+            <li class="status {repo.metadata.status}">
+              {#if repo.metadata.status == 'active'}
+                <span>🔥</span>
+                <span>actief</span>
+              {:else}
+                  <span>🧊</span>
+                  <span>inactief</span>
+              {/if}
+            </li>
+          </ul>
+        </div>
+        
         {#if repo.metadata && Object.keys(repo.metadata).length > 0}
-          <span>{repo.metadata.title}</span>
-        {:else}
-          <span>{repo.name}</span>
+          <p>{repo.metadata?.client}</p>
         {/if}
-        </h3>
+
+        
       </header>
 
       <div class="details">
@@ -80,12 +107,16 @@
         <ul>
           <li>
             <a href={`/${repo.name}`}>
-              Repository details
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-eye"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" /></svg>
+              
+              Repository details
             </a>
+          </li>
+          <li>
             <a href={`https://github.com/fdnd-agency/${repo.name}`}>
-              Show on GitHub
               <ExternalLink size={16} />
+
+              Show on GitHub
             </a>
           </li>
         </ul>
@@ -102,22 +133,25 @@
   section {
     display:flex;
     flex-direction: column;
-    gap:1rem;
+    gap:2rem;
+    max-width: var(--max-width);
+    margin: 0 auto 1rem;
+    padding: var(--padding-side) var(--padding-side) 0 calc(var(--padding-side) * 2);
 
-    header {
+    > header {
       grid-column: 1 / -1;
+      padding:0 1rem;
     }
 
-    @media (min-width: 40rem) {
+    @media (min-width: 60rem) {
       display:grid;
       grid-template-columns: 1fr 1fr;
       place-items:stretch;
     }
 
-    @media (min-width: 60rem) {
+    @media (min-width: 80rem) {
       grid-template-columns: 1fr 1fr 1fr;
     }
-
 
     article {
       display:flex;
@@ -129,17 +163,65 @@
       display:flex;
       padding:1rem;
       min-height:100%;
+      background:#eee;
 
-      h3 {
-        font-weight:normal;
+      header {
         background-color: var(--accent-color-2);
         margin:-1rem -1rem 1rem;
         padding:.5rem 1rem;
         border-radius: var(--small-radius) var(--small-radius) 0 0;
         border-bottom:1px solid currentColor;
-      
-        &::first-letter {
-          text-transform: capitalize;
+        
+        div {
+          display:flex;
+          justify-content: space-between;
+          align-items: start;
+          position:relative;
+        }
+        
+        h3 {
+          width:fit-content; 
+          margin-top: .5rem;
+          
+          &::first-letter {
+            text-transform: capitalize;
+          }
+        }
+
+        p {
+          margin-bottom: .5rem;
+          text-wrap: balance;
+        }
+
+        ul {
+          position:absolute;
+          right:0;
+          bottom:-4.25rem;
+          display:flex;
+          flex-direction: row;
+          align-items:center;
+          font-size: .9rem;
+
+          li {
+            display: inherit;
+            align-items: inherit;
+            white-space: nowrap;
+            border:1px solid currentColor;
+            border-radius:.5rem;
+            padding:0 .5rem;
+            background-color: var(--grey);
+          }
+
+          .status {
+            --_fill: #b6e9da;
+            background-color:var(--_fill);
+          }
+
+          .inactive {
+            --_fill: #d3c1ef;
+          }
+
+        
         }
       }
 
@@ -153,6 +235,7 @@
         gap:1rem;
         align-items: start;
         margin-bottom: 1rem;
+        margin-top:1rem;
 
         div {
           border-right:1px solid var(--blue-20);
@@ -161,6 +244,10 @@
           &:last-child {
             border:none;
             padding:0;
+          }
+
+          span {
+            white-space: nowrap;
           }
 
           ul {
@@ -203,10 +290,7 @@
         ul {
           margin:0;
           flex-direction: row;
-
-          li {
-            font-size:.9rem;
-          }
+          gap: 1rem;
         }
 
         a {
@@ -214,26 +298,15 @@
           display: flex;
           gap:.25rem;
           align-items: center;
-          border:1px solid var(--blue);
-          padding:0 .25rem;
-          border-radius:.5rem;
-          background-color: rgb(255,255,255,.25);
+          text-decoration:underline;
+         
 
           &:hover, &:focus-visible {
-            background-color:var(--accent-color-2);
+            text-decoration:none;
           }
         }
       }
 
-      
-        
-      
-
-
-      
-      
     } 
   }
-  
-  
 </style>
