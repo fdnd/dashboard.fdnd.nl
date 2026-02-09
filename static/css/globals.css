@@ -136,7 +136,7 @@ main {
     background: var(--background);
     border-radius: var(--radius);
     margin: 0 calc(var(--radius));
-    padding-bottom: var(--padding-side);
+    padding: calc(var(--padding-side) * 2);
 }
 
 main::after {

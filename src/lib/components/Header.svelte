@@ -64,8 +64,10 @@
             </button>
         </div>
 
-        <ul style="--total: 4;">
-            <li style="--i: 1;"><a href="https://github.com/fdnd-agency">FDND Agency GitHub</a></li>
+        <ul style="--total: 3;">
+            <li style="--i: 1;"><a href="#active-projects">Active projects</a></li>
+            <li style="--i: 2;"><a href="#inactive-projects">Inactive projects</a></li>
+            <li style="--i: 3;"><a href="https://github.com/fdnd-agency">FDND Agency GitHub</a></li>
         </ul>
     </nav>
 </header>

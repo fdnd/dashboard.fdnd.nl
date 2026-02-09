@@ -551,7 +551,6 @@ SIMPLE TEXT
 .simple-text {
     max-width: var(--max-width);
     margin: 0 auto;
-    padding: var(--padding-side) var(--padding-side) 0 calc(var(--padding-side));
 }
 
 .simple-text .inner {
