@@ -232,8 +232,6 @@
       }
     }
 
-    
-
     footer {
       background-color: #d3c1ef;
       margin:auto -1rem -1rem;
