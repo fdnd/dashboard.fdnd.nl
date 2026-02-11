@@ -23,11 +23,6 @@
             <span>🎓 jaar {year}</span>
           </li>
         {/each}
-
-        <li class="status {status}">
-          <span>{status === 'active' ? '🔥' : '🧊'}</span>
-          <span class="sr-only">{status}</span>
-        </li>
       </ul>
     </div>
 
@@ -110,6 +105,7 @@
 
 <style>
   article {
+    --_fill: var(--accent-color-2);
     display:flex;
     flex-direction: column;
     justify-content:start;
@@ -122,7 +118,7 @@
     background:#eee;
 
     header {
-      background-color: var(--accent-color-2);
+      background-color: var(--_fill);
       margin:-1rem -1rem 1rem;
       padding:.5rem 1rem;
       border-radius: var(--small-radius) var(--small-radius) 0 0;
@@ -168,21 +164,14 @@
           background-color: var(--grey);
         }
 
-        .status {
-          --_fill: #b6e9da;
-          background-color:var(--_fill);
-        }
-
-        .inactive {
-          --_fill: #d3c1ef;
-        }
+        
 
       
       }
     }
 
-    h4{
-      margin-bottom: .5rem;
+    &.inactive header {
+      --_fill: #d3c1ef;
     }
 
     div.details {
@@ -200,6 +189,10 @@
         &:last-child {
           border:none;
           padding:0;
+        }
+
+        h4{
+          margin-bottom: .5rem;
         }
 
         span {
@@ -233,7 +226,7 @@
     }
 
     footer {
-      background-color: #d3c1ef;
+      background-color: #e3e3e3;
       margin:auto -1rem -1rem;
       padding:.5rem 1rem;
       border-radius: 0 0 var(--small-radius) var(--small-radius);
