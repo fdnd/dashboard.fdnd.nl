@@ -245,8 +245,8 @@ button {
     all:unset;
     background-color: var(--darkgrey);
     border-radius:.5rem;
-    padding:calc(.5rem - 2px);
-    color:#aaa;
+    padding:calc(.25rem .5rem);
+    color:var(--blue);
     transition:250ms;
 }
 
