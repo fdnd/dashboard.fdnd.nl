@@ -180,5 +180,102 @@ export async function fetchCommitStats(organization, repository, sha, token) {
   return { filesChanged: commit?.files?.length ?? 0 }
 }
 
+/**
+ * Backlog related functions (epics/userstories/features)
+ */
 
+/**
+ * Fetch issues with a specific label (e.g., 'epic') for a specific repository
+ */
+export async function fetchIssuesByLabel(organization, repository, label, token) {
+  const url = `${API}/repos/${organization}/${repository}/issues?labels=${label}&state=open&per_page=100`;
+  const issues = await safeFetch(url, token);
 
+  if (!issues) return [];
+
+  return issues.map(issue => formatIssue(issue));
+}
+
+/**
+ * Fetch subissues (nested issues) for a given issue
+ */
+export async function fetchSubissues(organization, repository, issueNumber, token, level = 1) {
+  if (level > 3) return [];
+
+  const url = `${API}/repos/${organization}/${repository}/issues/${issueNumber}/timeline?per_page=100`;
+  const timeline = await safeFetch(url, token);
+
+  if (!timeline) return [];
+
+  const subissues = timeline
+    .filter(item => item.event === 'cross-referenced' && item.source.issue)
+    .map(item => formatIssue(item.source.issue));
+
+  const nestedSubissues = await Promise.all(
+    subissues.map(async (subissue) => {
+      const nested = await fetchSubissues(organization, repository, subissue.number, token, level + 1);
+      return {
+        ...subissue,
+        sub_issues_summary: nested.length,
+        subissues: nested
+      };
+    })
+  );
+
+  return nestedSubissues;
+}
+
+/**
+ * Fetch epics and their nested subissues for specific repositories
+ */
+/**
+ * Fetches epics and subissues for repositories and nests them in the repos object
+ */
+export async function fetchEpicsAndSubissues(organization, repositories, token) {
+  const reposWithEpics = [];
+
+  for (const repo of repositories) {
+    try {
+      const epics = await fetchIssuesByLabel(organization, repo.name, 'epic', token);
+
+      const epicsWithSubissues = await Promise.all(
+        epics.map(async (epic) => {
+          const subissues = await fetchSubissues(organization, repo.name, epic.number, token);
+          return {
+            ...epic,
+            sub_issues_summary: subissues.length,
+            subissues
+          };
+        })
+      );
+
+      reposWithEpics.push({
+        ...repo,
+        epics: epicsWithSubissues
+      });
+    } catch (error) {
+      console.error(`Error fetching epics for ${repo.name}:`, error);
+      reposWithEpics.push(repo); // Still include the repo even if epics fail
+    }
+  }
+
+  return reposWithEpics;
+}
+
+/**
+ * Formats issue or subissue data to include only the required fields
+ */
+function formatIssue(issue) {
+  return {
+    title: issue.title,
+    url: issue.html_url,
+    number: issue.number,
+    labels: issue.labels?.map(label => label.name) || [],
+    user: {
+      login: issue.user?.login,
+      avatar_url: issue.user?.avatar_url
+    },
+    state: issue.state,
+    body: issue.body,
+  };
+}

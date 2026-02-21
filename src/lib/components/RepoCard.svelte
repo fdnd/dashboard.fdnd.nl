@@ -86,19 +86,45 @@
 
   {#if hasMeta}
     <footer>
+      {#if repo.epcis.length > 0 }
+      <button command="show-modal" commandfor="backlog-{repo.name}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-checkup-list"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" /><path d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2" /><path d="M9 14h.01" /><path d="M9 17h.01" /><path d="M12 16l1 1l3 -3" /></svg>
+        <span>epics</span>
+      </button>
+      {/if}
+
       <ul>
         <li>
           <a href={`/${repo.name}`}>
-            Repository details
+            repository details
           </a>
         </li>
         <li>
           <a href={`https://github.com/fdnd-agency/${repo.name}`}>
+            
+            show on GitHub
             <ExternalLink size={16} />
-            Show on GitHub
           </a>
         </li>
       </ul>
+
+      {#if repo.epcis.length > 0 }
+      <dialog id="backlog-{repo.name}">
+        <h4>Backlog</h4>
+
+        <ul>
+        {#each repo.epics as epic}
+          <li>
+            <a href="{epic.url}">{epic.title}</a>
+          </li>
+        {/each}
+        </ul>
+        
+        <button commandfor="backlog-{repo.name}" command="close">
+          close
+        </button>
+      </dialog>
+      {/if}
     </footer>
   {/if}
 </article>
@@ -232,12 +258,37 @@
       border-radius: 0 0 var(--small-radius) var(--small-radius);
       border-top:1px solid currentColor;
       display:flex;
-      justify-content: end;
 
       ul {
-        margin:0;
+        margin:0 0 0 auto;
         flex-direction: row;
         gap: 1rem;
+      }
+
+      button {
+        align-self:start;
+        padding:.25rem .5rem;
+        border: 1px solid var(--blue);
+        background:transparent;
+        display:flex;
+        gap:.25rem;
+        align-items:center;
+      }
+
+      :modal {
+        display:grid;
+        place-self: center;
+        border-radius:1rem;
+        z-index:100;
+
+        ul {
+          flex-direction: column;
+          margin-bottom: 1rem;
+        }
+
+        button {
+          justify-self: end;
+        }
       }
 
       a {
