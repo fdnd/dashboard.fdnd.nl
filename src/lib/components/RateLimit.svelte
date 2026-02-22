@@ -39,10 +39,6 @@ aside {
         right: .5rem;
         height: 1.25rem;
         width: 1.25rem;
-
-        svg {
-          stroke: 1px;
-        }
       }
     }
 

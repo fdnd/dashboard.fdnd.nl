@@ -185,10 +185,6 @@
         display:flex;
         align-items:center;
         gap:1rem;
-
-        svg {
-          translate: -10px 0;
-        }
       }
 
       div.body {
@@ -322,7 +318,4 @@
       opacity:.6;
     }
   }
-
-
-  
 </style>
