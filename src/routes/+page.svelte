@@ -31,7 +31,6 @@
   <h1>FDND Agency</h1>
 </header>
 
-
 <RepoList
   title="Active projects 🔥"
   id="active-projects"

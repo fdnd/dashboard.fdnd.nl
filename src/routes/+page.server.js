@@ -1,6 +1,6 @@
 // +page.server.js
 import { GITHUB_ORGANIZATION, GITHUB_TOKEN } from '$env/static/private';
-import { fetchOrgTeams, fetchTeamRepos, fetchTeamMembers, fetchRepoMetadata, fetchEpicsAndSubissues } from '$lib/github';
+import { fetchOrgTeams, fetchTeamRepos, fetchTeamMembers, fetchRepoMetadata, fetchEpics } from '$lib/github';
 
 export const prerender = true;
 
@@ -39,7 +39,7 @@ export async function load() {
 
   // Fetch epics and subissues for repositories with repo_metadata.yml
   const reposWithMetadata = uniqueRepos.filter(repo => Object.keys(repo.metadata).length > 0);
-  const reposWithEpics = await fetchEpicsAndSubissues(org, reposWithMetadata, token);
+  const reposWithEpics = await fetchEpics(org, reposWithMetadata, token);
 
   return {
     org,
