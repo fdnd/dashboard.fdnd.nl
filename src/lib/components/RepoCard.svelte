@@ -108,7 +108,7 @@
       </ul>
       {#if repo.epics?.length > 1}
       <dialog id="backlog-{repo.name}">
-        <h4>Backlog</h4>
+        <h4><em>{hasMeta ? repo.metadata.title : repo.name}</em> <span>Epics</span></h4>
 
         <ul>
         {#each repo.epics as epic}
@@ -282,6 +282,13 @@
 
         h4 {
           margin-bottom: .5rem;
+          display:flex;
+          flex-direction:column;
+
+          em {
+            font-style: normal;
+            font-size: 1.25rem;
+          }
         }
 
         ul {
