@@ -252,6 +252,7 @@
       border-radius: 0 0 var(--small-radius) var(--small-radius);
       border-top:1px solid currentColor;
       display:flex;
+      min-height: 3.25rem;
 
       ul {
         margin:0 0 0 auto;
