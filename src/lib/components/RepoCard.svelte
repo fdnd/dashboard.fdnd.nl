@@ -86,7 +86,7 @@
 
   {#if hasMeta}
     <footer>
-      {#if repo.epics?.length > 1}
+      {#if repo.epics?.length > 0}
       <button command="show-modal" commandfor="backlog-{repo.name}">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-checkup-list"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" /><path d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2" /><path d="M9 14h.01" /><path d="M9 17h.01" /><path d="M12 16l1 1l3 -3" /></svg>
         <span>epics</span>
@@ -106,7 +106,7 @@
           </a>
         </li>
       </ul>
-      {#if repo.epics?.length > 1}
+      {#if repo.epics?.length > 0}
       <dialog id="backlog-{repo.name}">
         <h4><em>{hasMeta ? repo.metadata.title : repo.name}</em> <span>Epics</span></h4>
 
@@ -286,6 +286,7 @@
         place-self: center;
         border-radius:1rem;
         z-index:100;
+        height:fit-content;
 
         h4 {
           margin-bottom: .5rem;
@@ -301,6 +302,7 @@
         ul {
           flex-direction: column;
           margin-bottom: 1rem;
+          margin-left: 0;
         }
 
         button {
