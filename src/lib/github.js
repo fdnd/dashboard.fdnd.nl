@@ -191,6 +191,8 @@ export async function fetchEpics(organization, repository, token) {
   const url = `https://api.github.com/repos/${organization}/${repository}/issues?labels=epic&state=open&per_page=100`
   const issues = await safeFetch(url, token)
 
+  console.log(issues)
+
   if (!issues) return []
 
   return issues.map(formatIssue)

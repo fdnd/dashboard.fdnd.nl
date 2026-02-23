@@ -5,7 +5,7 @@
   const { data } = $props()
   const repos = data.repos
 
-  console.log(repos)
+  // console.log(repos)
 
   const repoGroups = () => {
     const active = []
