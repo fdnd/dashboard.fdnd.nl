@@ -256,8 +256,14 @@
 
       ul {
         margin:0 0 0 auto;
-        flex-direction: row;
-        gap: 1rem;
+        flex-direction: column;
+        gap: .25rem;
+        align-items:start;
+
+        @media (min-width: 60rem) {
+          flex-direction:row;
+          gap:1rem;
+        }
       }
 
       button {
