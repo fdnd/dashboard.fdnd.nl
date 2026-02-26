@@ -25,6 +25,7 @@ aside {
   border-radius:var(--radius);
   padding:.5rem .75rem;
   position:fixed;
+  z-index:100;
   bottom:1rem;
   right:1rem;
   font-size: .7em;
