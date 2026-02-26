@@ -31,6 +31,13 @@
   select {
     padding:.25rem;
     font-family: inherit;
-    color:currentColor
+    color:currentColor;
+    border-radius:.5rem;
+    background-color: #e3e3e3;
+
+    &:focus-visible {
+      outline:none;
+      box-shadow:0 0 0 2px rgb(0,0,0,.1)
+    }
   }
 </style>
