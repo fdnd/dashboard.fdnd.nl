@@ -20,7 +20,7 @@
       <ul>
         {#each repo.metadata?.years ?? [] as year}
           <li>
-            <span>🎓 jaar {year}</span>
+            <span>🎓 year {year}</span>
           </li>
         {/each}
       </ul>
@@ -246,12 +246,13 @@
     }
 
     footer {
-      background-color: #e3e3e3;
+      background-color: transparent;
       margin:auto -1rem -1rem;
       padding:.5rem 1rem;
       border-radius: 0 0 var(--small-radius) var(--small-radius);
       border-top:1px solid currentColor;
       display:flex;
+      align-items: center;
       min-height: 3.25rem;
 
       ul {
@@ -267,17 +268,20 @@
       }
 
       button {
-        --_background: transparent
+        --_background: #e3e3e3;
         align-self:start;
         padding:.25rem .5rem;
         border: 1px solid var(--blue);
         background:var(--_background);
         display:flex;
         gap:.25rem;
+        align-self:center;
         align-items:center;
+        cursor: pointer;
 
+        &:hover,
         &:focus-visible {
-          --_background: #a3ffe3;
+          --_background: var(--green);
         }
       }
 

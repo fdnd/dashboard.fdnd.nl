@@ -93,6 +93,10 @@ body {
     color: var(--color);
     font-family: 'Open Sans', sans-serif;
     line-height: 1.5;
+
+    @media (min-width: 60rem) {
+        padding:0 1rem;
+    }
 }
 
 body::before {
@@ -200,11 +204,6 @@ form {
     position: relative;
 }
 
-@media (min-width: 750px) {
-    form {
-        width:50vw
-    }
-}
 form h2 {
     text-wrap:balance
 }
@@ -216,9 +215,6 @@ fieldset {
 }
 legend {
     display: none;
-}
-label {
-    font-weight: bold;
 }
 input, textarea {
     display:block;
