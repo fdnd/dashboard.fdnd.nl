@@ -290,7 +290,11 @@
         place-self: center;
         border-radius:1rem;
         z-index:100;
-        height:fit-content;
+        border-width:1px;
+
+        height: auto;
+        max-height: max-content;
+        min-height: unset;
 
         h4 {
           margin-bottom: .5rem;
