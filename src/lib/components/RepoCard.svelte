@@ -141,6 +141,10 @@
     min-height:100%;
     background:#eee;
 
+    &.inactive * {
+      color:#4c4c4c;
+    }
+
     header {
       background-color: var(--_fill);
       margin:-1rem -1rem 1rem;
@@ -191,7 +195,7 @@
     }
 
     &.inactive header {
-      --_fill: #d3c1ef;
+      --_fill: #e3e3e3;
     }
 
     div.details {
@@ -290,7 +294,7 @@
         place-self: center;
         border-radius:1rem;
         z-index:100;
-        border-width:1px;
+        border-width:1px; 
 
         height: auto;
         max-height: max-content;
