@@ -141,10 +141,6 @@
     min-height:100%;
     background:#eee;
 
-    &.inactive * {
-      color:#4c4c4c;
-    }
-
     header {
       background-color: var(--_fill);
       margin:-1rem -1rem 1rem;
