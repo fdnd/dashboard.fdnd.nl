@@ -28,14 +28,6 @@
   <header>
     <h2>
       {title}
-      <a
-        href="https://github.com/fdnd-agency/"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        show on GitHub
-        <ExternalLink size={12} />
-      </a>
     </h2>
 
     <YearFilter
@@ -52,9 +44,9 @@
   section {
     display:flex;
     flex-direction: column;
-    gap:1rem;
+    gap:2rem;
     max-width: var(--max-width);
-    margin: 0 -1rem 1rem;
+    margin: 0 -1rem 3rem;
 
     > header {
       grid-column: 1 / -1;
