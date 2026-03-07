@@ -31,15 +31,15 @@ export async function load({ params }) {
       const branchData = await fetchRepoBranches(org, repo, token)
 
       branches = await Promise.all(
-        branchData.map(async (b) => {
-          const branchName = b.name
+        branchData.map(async (branch) => {
+          const branchName = branch.name
           const memberCommitCounts = {}
 
           await Promise.all(
-            teamMembers.map(async (m) => {
-              const count = await fetchCommitCount(org, repo, branchName, m.login, token)
-              memberCommitCounts[m.login] = count
-              totalCommits[m.login] += count
+            teamMembers.map(async (member) => {
+              const count = await fetchCommitCount(org, repo, branchName, member.login, token)
+              memberCommitCounts[member.login] = count
+              totalCommits[member.login] += count
             })
           )
 
@@ -49,13 +49,13 @@ export async function load({ params }) {
 
       const allPRs = await fetchRepoPullRequests(org, repo, token)
 
-      teamMembers.forEach(m => {
-        pullRequestsByMember[m.login] = { open: [], closed: [] }
+      teamMembers.forEach(member => {
+        pullRequestsByMember[member.login] = { open: [], closed: [] }
       })
 
       for (const pr of allPRs) {
         const authorLogin = pr.user?.toLowerCase()
-        const member = teamMembers.find(m => m.login.toLowerCase() === authorLogin)
+        const member = teamMembers.find(member => member.login.toLowerCase() === authorLogin)
 
         if (member) {
           if (pr.state === 'open') {

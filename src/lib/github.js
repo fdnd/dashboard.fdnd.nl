@@ -1,6 +1,6 @@
 import yaml from 'js-yaml'
 
-const API = "https://api.github.com"
+const API = 'https://api.github.com'
 
 /**
  * Helper function to fetch data from GitHub API
@@ -35,7 +35,7 @@ async function safeFetch(url, token, options = {}) {
  */
 export async function fetchOrgTeams(organization, token) {
   const url = `${API}/orgs/${organization}/teams?per_page=100`
-  return ghFetch(url, token)
+  return safeFetch(url, token)
 }
 
 /**
@@ -43,12 +43,12 @@ export async function fetchOrgTeams(organization, token) {
  */
 export async function fetchTeamRepos(organization, team, token) {
   const url = `${API}/orgs/${organization}/teams/${team}/repos?per_page=100`
-  return ghFetch(url, token)
+  return safeFetch(url, token)
 }
 
 export async function fetchTeamMembers(organization, team, token) {
   const url = `${API}/orgs/${organization}/teams/${team}/members?per_page=100`
-  return ghFetch(url, token)
+  return safeFetch(url, token)
 }
 
 /**
@@ -56,33 +56,33 @@ export async function fetchTeamMembers(organization, team, token) {
  */
 export async function fetchRepoBranches(organization, repository, token) {
   const url = `${API}/repos/${organization}/${repository}/branches?per_page=100`
-  return ghFetch(url, token)
+  return safeFetch(url, token)
 }
 
 export async function fetchRepoTeams(organization, repository, token) {
   const url = `${API}/repos/${organization}/${repository}/teams?per_page=100`
-  return ghFetch(url, token)
+  return safeFetch(url, token)
 }
 
 export async function fetchRepoContributors(organization, repository, token) {
   const url = `${API}/repos/${organization}/${repository}/contributors?per_page=100`
-  return ghFetch(url, token)
+  return safeFetch(url, token)
 }
 
 export async function fetchRepoPullRequests(organization, repository, token) {
   const url = `${API}/repos/${organization}/${repository}/pulls?state=all&ampper_page=100`
   const pullRequests = await safeFetch(url, token)
   return pullRequests
-    ? pullRequests.map((pullRequest) => ({
-        id: pullRequest.id,
-        number: pullRequest.number,
-        title: pullRequest.title,
-        user: pullRequest.user?.login ?? 'unknown',
-        state: pullRequest.state,
-        html_url: pullRequest.html_url,
-        merged_at: pullRequest.merged_at,
-        created_at: pullRequest.created_at,
-        updated_at: pullRequest.updated_at
+    ? pullRequests.map((pr) => ({
+        id: pr.id,
+        number: pr.number,
+        title: pr.title,
+        user: pr.user?.login ?? 'unknown',
+        state: pr.state,
+        html_url: pr.html_url,
+        merged_at: pr.merged_at,
+        created_at: pr.created_at,
+        updated_at: pr.updated_at
       }))
     : []
 }
@@ -179,10 +179,6 @@ export async function fetchCommitStats(organization, repository, sha, token) {
   const commit = await safeFetch(url, token)
   return { filesChanged: commit?.files?.length ?? 0 }
 }
-
-/**
- * Backlog related functions (epics/userstories/features)
- */
 
 /**
  * Fetch epic issues for a specific repository
