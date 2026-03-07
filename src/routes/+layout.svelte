@@ -32,7 +32,7 @@
       // start a delay timer
       timeoutId = setTimeout(() => {
         showLoader = true
-      }, 250)
+      }, 500)
     } else {
       // navigation finished: hide loader immediately
       showLoader = false
