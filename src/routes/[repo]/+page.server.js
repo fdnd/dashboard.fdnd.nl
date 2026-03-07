@@ -1,81 +1,116 @@
-import { GITHUB_ORGANIZATION, GITHUB_TOKEN } from '$env/static/private'
-import { 
-  fetchRepoTeams, 
-  fetchTeamMembers, 
-  fetchRepoBranches, 
+import { GITHUB_ORGANIZATION, GITHUB_TOKEN } from '$env/static/private';
+import {
+  fetchRepoTeams,
+  fetchTeamMembers,
+  fetchRepoBranches,
   fetchCommitCount,
   fetchRepoPullRequests
-} from '$lib/github'
+} from '$lib/github';
 
-export const prerender = false
+export const prerender = false;
 
 export async function load({ params }) {
-  const org = GITHUB_ORGANIZATION
-  const token = GITHUB_TOKEN
-  const repo = params.repo
+  const org = GITHUB_ORGANIZATION;
+  const token = GITHUB_TOKEN;
+  const repo = params.repo;
 
-  let branches = []
-  let teamMembers = []
-  let totalCommits = {}
-  let pullRequestsByMember = {}
+  let branches = [];
+  let teamMembers = [];
+  let totalCommits = {};
+  let pullRequestsByMember = {};
 
   try {
-    const teams = await fetchRepoTeams(org, repo, token)
-    const teamSlug = teams.length > 0 ? teams[0].slug : null
+    const teams = await fetchRepoTeams(org, repo, token);
 
-    if (teamSlug) {
-      teamMembers = await fetchTeamMembers(org, teamSlug, token)
+    // Geen teams → niets te doen
+    if (!teams || teams.length === 0) {
+      return { org, repo, branches, teamMembers, totalCommits, pullRequestsByMember };
+    }
 
-      teamMembers.forEach(m => (totalCommits[m.login] = 0))
+    const teamSlug = teams[0].slug;
+    if (!teamSlug) {
+      return { org, repo, branches, teamMembers, totalCommits, pullRequestsByMember };
+    }
 
-      const branchData = await fetchRepoBranches(org, repo, token)
+    // Haal teamleden, branches en PR's parallel op
+    const [members, branchData, allPRs] = await Promise.all([
+      fetchTeamMembers(org, teamSlug, token),
+      fetchRepoBranches(org, repo, token),
+      fetchRepoPullRequests(org, repo, token)
+    ]);
 
+    teamMembers = members ?? [];
+
+    // Geen teamleden → geen commits/PR's te tellen
+    if (!teamMembers.length) {
+      return { org, repo, branches, teamMembers, totalCommits, pullRequestsByMember };
+    }
+
+    // Init totalCommits voor alle leden
+    totalCommits = Object.fromEntries(teamMembers.map((m) => [m.login, 0]));
+
+    // Commits per branch en per member parallel ophalen
+    if (branchData && branchData.length) {
       branches = await Promise.all(
         branchData.map(async (branch) => {
-          const branchName = branch.name
-          const memberCommitCounts = {}
+          const branchName = branch.name;
+          const memberCommitCounts = {};
 
           await Promise.all(
             teamMembers.map(async (member) => {
-              const count = await fetchCommitCount(org, repo, branchName, member.login, token)
-              memberCommitCounts[member.login] = count
-              totalCommits[member.login] += count
+              const count = await fetchCommitCount(
+                org,
+                repo,
+                branchName,
+                member.login,
+                token
+              );
+              memberCommitCounts[member.login] = count;
+              totalCommits[member.login] += count;
             })
-          )
+          );
 
-          return { name: branchName, memberCommitCounts }
+          return { name: branchName, memberCommitCounts };
         })
-      )
+      );
+    }
 
-      const allPRs = await fetchRepoPullRequests(org, repo, token)
+    // Voor elke member alvast PR-buckets klaarzetten
+    pullRequestsByMember = Object.fromEntries(
+      teamMembers.map((member) => [member.login, { open: [], closed: [] }])
+    );
 
-      teamMembers.forEach(member => {
-        pullRequestsByMember[member.login] = { open: [], closed: [] }
-      })
+    // PR's toewijzen aan members (case-insensitive login-vergelijking)
+    if (allPRs && allPRs.length) {
+      const memberLookup = new Map(
+        teamMembers.map((m) => [m.login.toLowerCase(), m.login])
+      );
 
       for (const pr of allPRs) {
-        const authorLogin = pr.user?.toLowerCase()
-        const member = teamMembers.find(member => member.login.toLowerCase() === authorLogin)
+        const authorLogin = pr.user?.toLowerCase();
+        if (!authorLogin) continue;
 
-        if (member) {
-          if (pr.state === 'open') {
-            pullRequestsByMember[member.login].open.push(pr)
-          } else {
-            pullRequestsByMember[member.login].closed.push(pr)
-          }
-        }
+        const canonicalLogin = memberLookup.get(authorLogin);
+        if (!canonicalLogin) continue;
+
+        const bucket =
+          pr.state === 'open'
+            ? pullRequestsByMember[canonicalLogin].open
+            : pullRequestsByMember[canonicalLogin].closed;
+
+        bucket.push(pr);
       }
     }
   } catch (err) {
-    console.error(`Failed to fetch data for repo ${repo}:`, err)
+    console.error(`Failed to fetch data for repo ${repo}:`, err);
   }
 
-  return { 
-    org, 
-    repo, 
-    branches, 
-    teamMembers, 
-    totalCommits, 
+  return {
+    org,
+    repo,
+    branches,
+    teamMembers,
+    totalCommits,
     pullRequestsByMember
-  }
+  };
 }

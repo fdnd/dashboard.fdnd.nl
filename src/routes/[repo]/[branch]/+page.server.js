@@ -4,12 +4,18 @@ import { fetchBranchCommits } from '$lib/github'
 export const prerender = false
 
 export async function load({ params }) {
-  const org = GITHUB_ORGANIZATION
-  const token = GITHUB_TOKEN
-  const repo = params.repo
-  const branch = params.branch
+  const org = GITHUB_ORGANIZATION;
+  const token = GITHUB_TOKEN;
+  const repo = params.repo;
+  const branch = params.branch;
 
-  const commits = await fetchBranchCommits(org, repo, branch, token, 50)
+  let commits = [];
 
-  return { org, repo, branch, commits }
+  try {
+    commits = (await fetchBranchCommits(org, repo, branch, token, 50)) ?? [];
+  } catch (err) {
+    console.error(`Failed to fetch commits for ${org}/${repo}@${branch}:`, err);
+  }
+
+  return { org, repo, branch, commits };
 }

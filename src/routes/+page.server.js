@@ -1,5 +1,4 @@
 // +page.server.js
-
 import { GITHUB_ORGANIZATION, GITHUB_TOKEN } from '$env/static/private';
 import {
   fetchOrgTeams,
@@ -15,57 +14,70 @@ export async function load() {
   const org = GITHUB_ORGANIZATION;
   const token = GITHUB_TOKEN;
 
-  // Fetch all teams in the organization
   const teams = await fetchOrgTeams(org, token);
 
-  const reposWithTeams = [];
-
-  // For each team, fetch members and repos
-  for (const team of teams) {
-    const members = await fetchTeamMembers(org, team.slug, token);
-
-    // Skip teams without members
-    if (!members || members.length === 0) continue;
-
-    const teamRepos = await fetchTeamRepos(org, team.slug, token);
-
-    for (const repo of teamRepos) {
-      let metadata = {};
-
-      try {
-        metadata = await fetchRepoMetadata(org, repo.name, token);
-      } catch (err) {
-        console.error(`Failed to fetch metadata for ${repo.name}:`, err);
-      }
-
-      reposWithTeams.push({
-        ...repo,
-        team: {
-          name: team.name,
-          slug: team.slug,
-          members
-        },
-        metadata
-      });
-    }
+  if (!teams || teams.length === 0) {
+    return {
+      org,
+      teams: [],
+      repos: []
+    };
   }
 
-  // Deduplicate repositories (in case multiple teams have access)
+  // Haal per team parallel members + repos op
+  const reposWithTeamsNested = await Promise.all(
+    teams.map(async (team) => {
+      const [members, teamRepos] = await Promise.all([
+        fetchTeamMembers(org, team.slug, token),
+        fetchTeamRepos(org, team.slug, token)
+      ]);
+
+      // Teams zonder members overslaan
+      if (!members || members.length === 0 || !teamRepos || teamRepos.length === 0) {
+        return [];
+      }
+
+      // Per repo metadata parallel ophalen
+      const reposWithMeta = await Promise.all(
+        teamRepos.map(async (repo) => {
+          let metadata = {};
+          try {
+            metadata = await fetchRepoMetadata(org, repo.name, token);
+          } catch (err) {
+            console.error(`Failed to fetch metadata for ${repo.name}:`, err);
+          }
+
+          return {
+            ...repo,
+            team: {
+              name: team.name,
+              slug: team.slug,
+              members
+            },
+            metadata
+          };
+        })
+      );
+
+      return reposWithMeta;
+    })
+  );
+
+  // Geneste arrays vlak maken
+  const reposWithTeams = reposWithTeamsNested.flat();
+
+  // Deduplicatie (bij meerdere teams met toegang tot dezelfde repo)
   const uniqueRepos = Array.from(
-    new Map(reposWithTeams.map(repo => [repo.full_name, repo])).values()
+    new Map(reposWithTeams.map((repo) => [repo.full_name, repo])).values()
   );
 
-  // Only keep repos that have repo_metadata.yml
+  // Alleen repos met repo_metadata.yml
   const reposWithMetadata = uniqueRepos.filter(
-    repo => repo.metadata && Object.keys(repo.metadata).length > 0
+    (repo) => repo.metadata && Object.keys(repo.metadata).length > 0
   );
 
-  // Fetch epics for those repositories
-  const reposWithEpics = await fetchEpicsForRepositories(
-    org,
-    reposWithMetadata,
-    token
-  );
+  // Epics ophalen (idealiter intern ook met Promise.all geïmplementeerd)
+  const reposWithEpics = await fetchEpicsForRepositories(org, reposWithMetadata, token);
 
   return {
     org,
