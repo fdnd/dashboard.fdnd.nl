@@ -1,116 +1,130 @@
-import { GITHUB_ORGANIZATION, GITHUB_TOKEN } from '$env/static/private';
+import { GITHUB_ORGANIZATION, GITHUB_TOKEN } from '$env/static/private'
 import {
   fetchRepoTeams,
   fetchTeamMembers,
   fetchRepoBranches,
-  fetchCommitCount,
+  fetchBranchCommits,
   fetchRepoPullRequests
-} from '$lib/github';
+} from '$lib/github'
 
-export const prerender = false;
+export const prerender = true
 
 export async function load({ params }) {
-  const org = GITHUB_ORGANIZATION;
-  const token = GITHUB_TOKEN;
-  const repo = params.repo;
+  const org = GITHUB_ORGANIZATION
+  const token = GITHUB_TOKEN
+  const repo = params.repo
 
-  let branches = [];
-  let teamMembers = [];
-  let totalCommits = {};
-  let pullRequestsByMember = {};
+  const emptyResult = {
+    org,
+    repo,
+    branches: [],
+    teamMembers: [],
+    totalCommits: {},
+    pullRequestsByMember: {}
+  }
 
   try {
-    const teams = await fetchRepoTeams(org, repo, token);
+    const teams = await fetchRepoTeams(org, repo, token)
+    const teamSlug = teams?.[0]?.slug
 
-    // Geen teams → niets te doen
-    if (!teams || teams.length === 0) {
-      return { org, repo, branches, teamMembers, totalCommits, pullRequestsByMember };
-    }
-
-    const teamSlug = teams[0].slug;
     if (!teamSlug) {
-      return { org, repo, branches, teamMembers, totalCommits, pullRequestsByMember };
+      return emptyResult
     }
 
-    // Haal teamleden, branches en PR's parallel op
-    const [members, branchData, allPRs] = await Promise.all([
+    const [members = [], branchData = [], allPRs = []] = await Promise.all([
       fetchTeamMembers(org, teamSlug, token),
       fetchRepoBranches(org, repo, token),
       fetchRepoPullRequests(org, repo, token)
-    ]);
+    ])
 
-    teamMembers = members ?? [];
-
-    // Geen teamleden → geen commits/PR's te tellen
-    if (!teamMembers.length) {
-      return { org, repo, branches, teamMembers, totalCommits, pullRequestsByMember };
+    if (!members.length) {
+      return {
+        ...emptyResult,
+        teamMembers: members
+      }
     }
 
-    // Init totalCommits voor alle leden
-    totalCommits = Object.fromEntries(teamMembers.map((m) => [m.login, 0]));
+    const totalCommits = Object.fromEntries(members.map(m => [m.login, 0]))
+    const memberLookup = new Map(
+      members.map(m => [m.login.toLowerCase(), m.login])
+    )
 
-    // Commits per branch en per member parallel ophalen
-    if (branchData && branchData.length) {
+    // 6 months ago from now (build time if prerendered)
+    const sixMonthsAgo = new Date()
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+    const sinceIso = sixMonthsAgo.toISOString()
+
+    let branches = []
+
+    if (branchData.length) {
       branches = await Promise.all(
-        branchData.map(async (branch) => {
-          const branchName = branch.name;
-          const memberCommitCounts = {};
+        branchData.map(async branch => {
+          const branchName = branch.name
+          const memberCommitCounts = Object.fromEntries(
+            members.map(m => [m.login, 0])
+          )
 
-          await Promise.all(
-            teamMembers.map(async (member) => {
-              const count = await fetchCommitCount(
-                org,
-                repo,
-                branchName,
-                member.login,
-                token
-              );
-              memberCommitCounts[member.login] = count;
-              totalCommits[member.login] += count;
-            })
-          );
+          const commits = await fetchBranchCommits(
+            org,
+            repo,
+            branchName,
+            token,
+            { maxCommits: 500, since: sinceIso }
+          )
 
-          return { name: branchName, memberCommitCounts };
+          if (Array.isArray(commits)) {
+            for (const commit of commits) {
+              const author = commit.author
+              if (!author) continue
+
+              const canonical = memberLookup.get(author.toLowerCase())
+              if (!canonical) continue
+
+              memberCommitCounts[canonical] += 1
+              totalCommits[canonical] += 1
+            }
+          }
+
+          return { name: branchName, memberCommitCounts }
         })
-      );
+      )
     }
 
-    // Voor elke member alvast PR-buckets klaarzetten
-    pullRequestsByMember = Object.fromEntries(
-      teamMembers.map((member) => [member.login, { open: [], closed: [] }])
-    );
+    const pullRequestsByMember = Object.fromEntries(
+      members.map(member => [member.login, { open: [], closed: [] }])
+    )
 
-    // PR's toewijzen aan members (case-insensitive login-vergelijking)
-    if (allPRs && allPRs.length) {
-      const memberLookup = new Map(
-        teamMembers.map((m) => [m.login.toLowerCase(), m.login])
-      );
+    if (allPRs.length) {
+      const memberLookupForPrs = new Map(
+        members.map(m => [m.login.toLowerCase(), m.login])
+      )
 
       for (const pr of allPRs) {
-        const authorLogin = pr.user?.toLowerCase();
-        if (!authorLogin) continue;
+        const authorLogin = pr.user?.toLowerCase()
+        if (!authorLogin) continue
 
-        const canonicalLogin = memberLookup.get(authorLogin);
-        if (!canonicalLogin) continue;
+        const canonicalLogin = memberLookupForPrs.get(authorLogin)
+        if (!canonicalLogin) continue
 
         const bucket =
           pr.state === 'open'
             ? pullRequestsByMember[canonicalLogin].open
-            : pullRequestsByMember[canonicalLogin].closed;
+            : pullRequestsByMember[canonicalLogin].closed
 
-        bucket.push(pr);
+        bucket.push(pr)
       }
     }
-  } catch (err) {
-    console.error(`Failed to fetch data for repo ${repo}:`, err);
-  }
 
-  return {
-    org,
-    repo,
-    branches,
-    teamMembers,
-    totalCommits,
-    pullRequestsByMember
-  };
+    return {
+      org,
+      repo,
+      branches,
+      teamMembers: members,
+      totalCommits,
+      pullRequestsByMember
+    }
+  } catch (err) {
+    console.error(`Failed to fetch data for repo ${repo}`, err)
+    return emptyResult
+  }
 }

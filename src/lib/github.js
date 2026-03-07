@@ -1,9 +1,7 @@
-import yaml from 'js-yaml'
-
 const API = 'https://api.github.com'
 
 /**
- * Helper function to fetch data from GitHub API
+ * Low-level GitHub fetch helper
  */
 export async function ghFetch(url, token, { raw = false, returnResponse = false } = {}) {
   const response = await fetch(url, {
@@ -14,66 +12,54 @@ export async function ghFetch(url, token, { raw = false, returnResponse = false 
     }
   })
 
-  if (!response.ok) throw new Error(`GitHub request failed: ${response.status} ${response.statusText}`)
+  if (!response.ok) {
+    throw new Error(`GitHub request failed: ${response.status} ${response.statusText}`)
+  }
+
   return returnResponse ? response : raw ? response.text() : response.json()
 }
 
 /**
- * Helper function to safely fetch data and handle errors
+ * Helper to log and recover from errors
  */
 async function safeFetch(url, token, options = {}) {
   try {
     return await ghFetch(url, token, options)
   } catch (error) {
-    console.error(`Failed to fetch from ${url}:`, error)
+    console.error(`Failed to fetch from ${url}`, error)
     return null
   }
 }
 
 /**
- * Organization level
+ * Repository-level helpers used by the repo routes
  */
-export async function fetchOrgTeams(organization, token) {
-  const url = `${API}/orgs/${organization}/teams?per_page=100`
-  return safeFetch(url, token)
-}
 
-/**
- * Team level
- */
-export async function fetchTeamRepos(organization, team, token) {
-  const url = `${API}/orgs/${organization}/teams/${team}/repos?per_page=100`
-  return safeFetch(url, token)
-}
-
-export async function fetchTeamMembers(organization, team, token) {
-  const url = `${API}/orgs/${organization}/teams/${team}/members?per_page=100`
-  return safeFetch(url, token)
-}
-
-/**
- * Repository level
- */
-export async function fetchRepoBranches(organization, repository, token) {
-  const url = `${API}/repos/${organization}/${repository}/branches?per_page=100`
-  return safeFetch(url, token)
-}
-
+// Teams for a given repo
 export async function fetchRepoTeams(organization, repository, token) {
   const url = `${API}/repos/${organization}/${repository}/teams?per_page=100`
   return safeFetch(url, token)
 }
 
-export async function fetchRepoContributors(organization, repository, token) {
-  const url = `${API}/repos/${organization}/${repository}/contributors?per_page=100`
+// Members of a team
+export async function fetchTeamMembers(organization, team, token) {
+  const url = `${API}/orgs/${organization}/teams/${team}/members?per_page=100`
   return safeFetch(url, token)
 }
 
+// Branch list
+export async function fetchRepoBranches(organization, repository, token) {
+  const url = `${API}/repos/${organization}/${repository}/branches?per_page=100`
+  return safeFetch(url, token)
+}
+
+// Pull requests (open + closed) for a repo
 export async function fetchRepoPullRequests(organization, repository, token) {
-  const url = `${API}/repos/${organization}/${repository}/pulls?state=all&ampper_page=100`
+  const url = `${API}/repos/${organization}/${repository}/pulls?state=all&per_page=100`
   const pullRequests = await safeFetch(url, token)
+
   return pullRequests
-    ? pullRequests.map((pr) => ({
+    ? pullRequests.map(pr => ({
         id: pr.id,
         number: pr.number,
         title: pr.title,
@@ -87,56 +73,68 @@ export async function fetchRepoPullRequests(organization, repository, token) {
     : []
 }
 
-export async function fetchRepoMetadata(owner, repository, token, branch = 'main') {
-  const url = `${API}/repos/${owner}/${repository}/contents/repo_metadata.yml?ref=${encodeURIComponent(branch)}`
-  const yamlText = await safeFetch(url, token, { raw: true })
-  if (!yamlText || !yamlText.trim()) return {}
-  try {
-    return yaml.load(yamlText) || {}
-  } catch (error) {
-    console.error(`Failed to parse YAML for ${owner}/${repository}@${branch}:`, error)
-    return {}
+// Commit details for a specific SHA (used on /repo/branch/commit)
+export async function fetchCommitDetails(organization, repository, sha, token) {
+  const url = `${API}/repos/${organization}/${repository}/commits/${sha}`
+  const data = await safeFetch(url, token)
+
+  if (!data) return null
+
+  return {
+    sha: data.sha,
+    author: data.commit?.author?.name ?? data.author?.login,
+    avatar_url: data.author?.avatar_url ?? null,
+    message: data.commit?.message,
+    date: data.commit?.author?.date,
+    stats: data.stats ?? { total: 0, additions: 0, deletions: 0 },
+    files:
+      data.files?.map(file => ({
+        filename: file.filename,
+        additions: file.additions,
+        deletions: file.deletions,
+        changes: file.changes
+      })) ?? []
   }
 }
 
 /**
- * Commit-related functions
+ * Commits for a branch.
+ *
+ * Used in:
+ * - /repo/branch (to list commits)
+ * - /repo (to aggregate commit counts per member)
+ *
+ * Only commits since the optional `since` date are returned,
+ * and at most `maxCommits` are fetched.
  */
-export async function fetchCommitDetails(organization, repository, sha, token) {
-  const url = `${API}/repos/${organization}/${repository}/commits/${sha}`
-  const data = await safeFetch(url, token)
-  return data
-    ? {
-        sha: data.sha,
-        author: data.commit?.author?.name ?? data.author?.login,
-        avatar_url: data.author?.avatar_url ?? null,
-        message: data.commit?.message,
-        date: data.commit?.author?.date,
-        stats: data.stats ?? { total: 0, additions: 0, deletions: 0 },
-        files:
-          data.files?.map((file) => ({
-            filename: file.filename,
-            additions: file.additions,
-            deletions: file.deletions,
-            changes: file.changes
-          })) ?? []
-      }
-    : null
-}
-
-export async function fetchBranchCommits(organization, repository, branch, token, maxCommits = 100) {
+export async function fetchBranchCommits(
+  organization,
+  repository,
+  branch,
+  token,
+  { maxCommits = 500, since } = {}
+) {
   const commits = []
   let page = 1
   let remaining = maxCommits
-  const perPage = Math.min(100, remaining)
 
   while (remaining > 0) {
-    const url = `${API}/repos/${organization}/${repository}/commits?sha=${branch}&ampper_page=${perPage}&amppage=${page}`
+    const perPage = Math.min(100, remaining)
+
+    const params = new URLSearchParams()
+    params.set('sha', branch)
+    params.set('per_page', String(perPage))
+    params.set('page', String(page))
+    if (since) {
+      params.set('since', since)
+    }
+
+    const url = `${API}/repos/${organization}/${repository}/commits?${params.toString()}`
     const response = await safeFetch(url, token)
     if (!response || response.length === 0) break
 
     commits.push(
-      ...response.map((commit) => ({
+      ...response.map(commit => ({
         sha: commit.sha,
         message: commit.commit.message,
         date: commit.commit.author.date,
@@ -146,95 +144,10 @@ export async function fetchBranchCommits(organization, repository, branch, token
     )
 
     if (response.length < perPage) break
+
     page++
     remaining -= response.length
   }
 
   return commits
-}
-
-export async function fetchCommitCount(organization, repository, branch, username, token) {
-  let page = 1
-  let totalCommits = 0
-  const perPage = 100 // Fetch up to 100 commits per page (GitHub's maximum)
-
-  while (true) {
-    const url = `${API}/repos/${organization}/${repository}/commits?sha=${branch}&amp;author=${username}&amp;per_page=${perPage}&amp;page=${page}`
-    const commits = await safeFetch(url, token)
-    if (!commits || commits.length === 0) break // Stop if no more commits are returned
-
-    totalCommits += commits.length
-
-    // If fewer than `perPage` commits are returned, we've reached the last page
-    if (commits.length > perPage) break
-
-    page++
-  }
-
-  return totalCommits
-}
-
-export async function fetchCommitStats(organization, repository, sha, token) {
-  const url = `${API}/repos/${organization}/${repository}/commits/${sha}`
-  const commit = await safeFetch(url, token)
-  return { filesChanged: commit?.files?.length ?? 0 }
-}
-
-/**
- * Fetch epic issues for a specific repository
- */
-export async function fetchEpics(organization, repository, token) {
-  const url = `https://api.github.com/repos/${organization}/${repository}/issues?labels=epic&state=open&per_page=100`
-  const issues = await safeFetch(url, token)
-
-  if (!issues) return []
-
-  return issues.map(formatIssue)
-}
-
-/**
- * Fetch epics for repositories and nest them in the repos object
- * (no subissues yet)
- */
-export async function fetchEpicsForRepositories(organization, repositories, token) {
-  const reposWithEpics = []
-
-  for (const repo of repositories) {
-    try {
-      const epics = await fetchEpics(organization, repo.name, token)
-
-      reposWithEpics.push({
-        ...repo,
-        epics,
-        epic_summary: epics.length
-      })
-    } catch (error) {
-      console.error(`Error fetching epics for ${repo.name}:`, error)
-      reposWithEpics.push({
-        ...repo,
-        epics: [],
-        epic_summary: 0
-      })
-    }
-  }
-
-  return reposWithEpics
-}
-
-/**
- * Formats issue data to include only the required fields
- */
-function formatIssue(issue) {
-  return {
-    title: issue.title,
-    url: issue.html_url,
-    number: issue.number,
-    labels: issue.labels?.map(label => label.name) || [],
-    user: {
-      login: issue.user?.login,
-      avatar_url: issue.user?.avatar_url
-    },
-    state: issue.state,
-    body: issue.body
-  }
 }
