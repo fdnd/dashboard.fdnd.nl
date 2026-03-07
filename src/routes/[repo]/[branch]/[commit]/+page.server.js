@@ -1,19 +1,24 @@
-// src/routes/[repo]/[branch]/[commit]/+page.server.js
+import { error } from '@sveltejs/kit'
 import { GITHUB_ORGANIZATION, GITHUB_TOKEN } from '$env/static/private'
 import { fetchCommitDetails } from '$lib/github'
 
-export const prerender = false // no need to prerender all commits
+export const prerender = false
 
 export async function load({ params }) {
   const { repo, branch, commit } = params
   const org = GITHUB_ORGANIZATION
   const token = GITHUB_TOKEN
 
+  let details = null
+
   try {
-    const details = await fetchCommitDetails(org, repo, commit, token)
-    return { repo, branch, sha: commit, details }
+    details = await fetchCommitDetails(org, repo, commit, token)
   } catch (err) {
-    console.error(`Failed to fetch commit details for ${repo}@${branch}:`, err)
-    return { repo, branch, sha: commit, details: null }
+    console.error(
+      `Failed to fetch commit details for ${org}/${repo}@${branch} (${commit}):`,
+      err
+    )
   }
+
+  return { repo, branch, sha: commit, details }
 }

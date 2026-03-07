@@ -9,7 +9,21 @@ export async function load({ params }) {
   const repo = params.repo
   const branch = params.branch
 
-  const commits = await fetchBranchCommits(org, repo, branch, token, 50)
+  let commits = []
+
+  try {
+    const sixMonthsAgo = new Date()
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+    const sinceIso = sixMonthsAgo.toISOString()
+
+    commits =
+      (await fetchBranchCommits(org, repo, branch, token, {
+        maxCommits: 50,
+        since: sinceIso
+      })) ?? []
+  } catch (err) {
+    console.error(`Failed to fetch commits for ${org}/${repo}@${branch}:`, err)
+  }
 
   return { org, repo, branch, commits }
 }

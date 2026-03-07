@@ -17,6 +17,7 @@
 		"vite": "^7.1.10"
 	},
 	"dependencies": {
+		"@octokit/graphql": "^9.0.3",
 		"js-yaml": "^4.1.0"
 	}
 }

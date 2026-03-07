@@ -9,45 +9,80 @@
   import OpenPRsIcon from '$lib/components/icons/OpenPRs.svelte'
   import ClosedPRsIcon from '$lib/components/icons/ClosedPRs.svelte'
 
-  
-  let {data} = $props()
-  let { org, repo, branches = [], teamMembers = [], totalCommits = {}, openPRs, closedPRs, pullRequestsByMember } = data
+  let { data } = $props()
+  let {
+    org,
+    repo,
+    branches = [],
+    teamMembers = [],
+    totalCommits = {},
+    pullRequestsByMember = {}
+  } = data
 
   const memberMap = {}
-  teamMembers.forEach(member => memberMap[member.login] = member)
+  teamMembers.forEach(member => {
+    memberMap[member.login] = member
+  })
+
+  const pullRequestStats = {}
+  for (const [login, prs] of Object.entries(pullRequestsByMember)) {
+    pullRequestStats[login] = {
+      open: prs.open.length,
+      closed: prs.closed.length
+    }
+  }
+
+  const periodLabel = 'last 6 months'
 </script>
 
 <section class="simple-text simple-grid">
-  
   <header>
-    <Breadcrumb items={[
-      { label: 'Dashboard', href: '/' },
-      { label: repo }
-    ]} />
+    <Breadcrumb
+      items={[
+        { label: 'Dashboard', href: '/' },
+        { label: repo }
+      ]}
+    />
 
     <h2>
       {repo}
-      <a href={`https://github.com/fdnd-agency/${repo}/`} target="_blank" rel="noopener noreferrer">
+      <a
+        href={`https://github.com/${org}/${repo}/`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
         <span>Show on GitHub</span>
         <ExternalLinkIcon size={12} />
       </a>
     </h2>
   </header>
-  
+
   <section class="totals" id="total-commits">
     <h3>
-      Total Commits
+      Total commits
       <CommitsIcon />
     </h3>
 
     <ul class="members">
-      {#each Object.entries(totalCommits).sort((a,b)=>b[1]-a[1]) as [login, count]}
+      {#each Object.entries(totalCommits).sort((a, b) => b[1] - a[1]) as [login, count]}
         <li>
-          <img src={memberMap[login].avatar_url} width="32" height="32" alt={login} class="avatar" />
-          <strong>{login}</strong> 
-          <small>{count} commits</small>
-          <!-- PRs: {pullRequestStats[login]?.open ?? 0} open / {pullRequestStats[login]?.closed ?? 0} closed -->
-          <!-- Issues totals & section -->
+          <img
+            src={memberMap[login].avatar_url}
+            width="32"
+            height="32"
+            alt={login}
+            class="avatar"
+          />
+          <div class="member-meta">
+            <strong>{login}</strong>
+            <small>
+              {count} commits
+              {#if pullRequestStats[login]}
+                · {pullRequestStats[login].open} open PRs
+                · {pullRequestStats[login].closed} closed PRs
+              {/if}
+            </small>
+          </div>
         </li>
       {/each}
     </ul>
@@ -62,47 +97,54 @@
     {#if branches.length === 0}
       <p>No branches or team members found.</p>
     {:else}
-    {#each branches as branch}
-      <article class="branch">
-        <details>
-          <summary>
-            <code>
-              {branch.name}
-            </code>
-          </summary>
+      {#each branches as branch}
+        <article class="branch">
+          <details>
+            <summary>
+              <code>{branch.name}</code>
+            </summary>
 
-          <div class="body">
-            <ul class="members">
-              {#each Object.entries(branch.memberCommitCounts).sort((a,b)=>b[1]-a[1]) as [login, count]}
+            <div class="body">
+              <ul class="members">
+                {#each Object
+                  .entries(branch.memberCommitCounts)
+                  .sort((a, b) => b[1] - a[1]) as [login, count]}
+                  <li>
+                    <img
+                      src={memberMap[login].avatar_url}
+                      width="32"
+                      height="32"
+                      alt={login}
+                      class="avatar"
+                    />
+                    <strong>{login}</strong>: {count} commits
+                  </li>
+                {/each}
+              </ul>
+
+              <ul class="more-info">
                 <li>
-                  <img src={memberMap[login].avatar_url} width="32" height="32" alt={login} class="avatar" />
-                  <strong>{login}</strong>: {count} commits
+                  <a href={`/${repo}/${branch.name}`}>
+                    <span>branch details</span>
+                    <ViewIcon />
+                  </a>
                 </li>
-              {/each}
-            </ul>
-
-            <ul class="more-info">
-              <li>
-                <a href={`/${repo}/${branch.name}`}>
-                  <span>branch details</span>
-                  <ViewIcon />
-                </a>
-              </li>
-              <li>
-                <a href={`https://fdnd-agency/${repo}/tree/${branch.name}`}>
-                  
-                  <span>show on GitHub</span>
-                  <ExternalLinkIcon size={12} />
-                </a>
-              </li>
-            </ul>
-
-           
-          </div>
-        </details>
-      </article>
-    {/each}
-  {/if}
+                <li>
+                  <a
+                    href={`https://github.com/${org}/${repo}/tree/${branch.name}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <span>show on GitHub</span>
+                    <ExternalLinkIcon size={12} />
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </details>
+        </article>
+      {/each}
+    {/if}
   </section>
 
   {#if pullRequestsByMember}
@@ -162,8 +204,6 @@
     {/each}
   </section>
   {/if}
-
-
 </section>
 
 <style>
@@ -269,7 +309,7 @@
     
     li {
       display:flex;
-      align-items:end;
+      align-items:center;
       gap:.25rem;
 
       img {
