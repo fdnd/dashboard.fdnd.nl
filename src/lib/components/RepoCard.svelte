@@ -140,6 +140,11 @@
     padding:1rem;
     min-height:100%;
     background:#eee;
+    margin:0 .5rem;
+
+    @media (min-width:30rem) {
+      margin:0;
+    }
 
     header {
       background-color: var(--_fill);
