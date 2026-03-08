@@ -6,7 +6,7 @@
   let { repo, branch, sha, details } = data
 </script>
 
-<section class="simple-text">
+<section>
   <header>
     <Breadcrumb items={[
       { label: 'Dashboard', href: '/' },
@@ -16,7 +16,7 @@
     ]} />
    
     <h2>
-      {sha.slice(0, 7)}
+      Commit: {sha.slice(0, 7)}
       <CommitIcon />
 
       <a href={`https://github.com/fdnd-agency/${repo}/commit/${sha}`} target="_blank" rel="noopener noreferrer">

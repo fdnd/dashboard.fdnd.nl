@@ -147,7 +147,12 @@ main {
     background: var(--background);
     border-radius: var(--radius);
     margin: 0 calc(var(--radius));
-    padding: calc(var(--padding-side) * 2);
+    padding: calc(var(--padding-side) * 1);
+    
+
+    @media (min-width: 30rem) {
+        padding: calc(var(--padding-side) * 2);
+    }
 }
 
 main::after {

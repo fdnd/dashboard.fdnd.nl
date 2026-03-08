@@ -8,7 +8,7 @@
   let { repo, branch, commits } = data
 </script>
 
-<section class="simple-text">
+<section>
   <header>
     <Breadcrumb
       items={[

@@ -35,7 +35,7 @@
   const periodLabel = 'last 6 months'
 </script>
 
-<section class="simple-text simple-grid">
+<section class="simple-grid">
   <header>
     <Breadcrumb
       items={[
