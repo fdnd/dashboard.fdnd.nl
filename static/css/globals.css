@@ -71,6 +71,13 @@ html {
 a {
     font-family: inherit;
     color: inherit;
+    padding:.25rem .25rem;
+    border-radius:.5rem;
+
+    &:focus-visible {
+        outline:none;
+        background:rgb(0,0,0,.1);
+    }
 }
 
 a:hover {

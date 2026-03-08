@@ -201,14 +201,22 @@
       align-items: start;
       margin-bottom: 1rem;
       margin-top:1rem;
+      font-family:monospace;
 
       div {
-        border-right:1px solid var(--blue-20);
-        padding-right:1rem;
+        border-right:1px solid #ccc;
+        padding:0 1rem;
+        margin: 0 calc(-1rem - .5px);
+
+        &:first-child {
+          border-left:none;
+          margin:0;
+          align-self:stretch;
+        }
 
         &:last-child {
           border:none;
-          padding:0;
+          margin:0;
         }
 
         h4{
@@ -241,6 +249,7 @@
           display:flex;
           align-items:center;
           gap:.25rem;
+          margin: -.25rem;
         }
       }
     }
@@ -254,16 +263,16 @@
       display:flex;
       align-items: center;
       min-height: 3.25rem;
+      font-family: monospace;
 
       ul {
         margin:0 0 0 auto;
         flex-direction: column;
-        gap: .25rem;
+        gap: .5rem;
         align-items:start;
 
         @media (min-width: 60rem) {
           flex-direction:row;
-          gap:1rem;
         }
       }
 
