@@ -48,6 +48,10 @@
       * {
         text-wrap:nowrap;
       }
+
+      a {
+        margin:-.25rem;
+      }
       
       a::first-letter, span::first-letter {
         text-transform: capitalize;

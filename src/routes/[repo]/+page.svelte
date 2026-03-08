@@ -213,6 +213,11 @@
 
     header {
       grid-column: 1 / -1;
+
+      a {
+        margin:0 -.25rem;
+        justify-self: start;
+      }
     }
 
     section {
