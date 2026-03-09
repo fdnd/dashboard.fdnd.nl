@@ -1,4 +1,5 @@
 <script>
+    import Git from "$lib/components/icons/Git.svelte"
     import { onMount } from "svelte"
 
     let isActive = false
@@ -65,9 +66,12 @@
         </div>
 
         <ul style="--total: 3;">
-            <li style="--i: 1;"><a href="/#active-projects">Active projects</a></li>
-            <li style="--i: 2;"><a href="/#inactive-projects">Inactive projects</a></li>
-            <li style="--i: 3;"><a href="https://github.com/fdnd-agency">FDND Agency GitHub</a></li>
+            <li style="--i: 1;"><a href="/#active-projects"><span>Active projects</span> 🔥</a></li>
+            <li style="--i: 2;"><a href="/#inactive-projects"><span>Inactive projects</span> 🧊</a></li>
+            <li style="--i: 3;"><a href="https://github.com/fdnd-agency">
+                <span>FDND Agency</span>
+                <Git />
+            </a></li>
         </ul>
     </nav>
 </header>
@@ -279,7 +283,7 @@ ul {
     flex-wrap: wrap;
     gap: calc(var(--grid-1) * 40 / 60);
     border-radius: var(--radius) var(--radius) 0 0;
-    padding: 1.5rem var(--grid-1-calc) 1.5rem 1.5rem;
+    padding: 1rem var(--grid-1-calc) 1rem 1.5rem;
     list-style: none;
     background: var(--background);
     color: var(--color);
@@ -361,19 +365,26 @@ ul::before {
 
 ul li {
     clip-path: inset(-10px -5px);
+    
 
 }
 
 ul li a {
-    display: block;
+    display:flex;
+    align-items:center;
+    gap:.25rem;
     transition: opacity 0.2s ease-out, transform 0.4s ease-out;
     transition-delay: calc(var(--total) - var(--i) * 0.1s);
     text-decoration: none;
     letter-spacing: -0.03em;
 }
 
-ul li a:hover {
+ul li a span {
     text-decoration: underline;
+}
+
+ul li a:hover span {
+    text-decoration: none;
 }
 
 @media (max-width: 750px) {

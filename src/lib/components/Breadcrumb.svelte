@@ -44,6 +44,7 @@
       display:flex;
       gap:.25rem;
       flex-wrap:nowrap;
+      align-items:center;
 
       * {
         text-wrap:nowrap;
