@@ -707,5 +707,4 @@ Program
 .avatar {
     border-radius:50%;
     border:1px solid var(--blue);
-    translate: 0 -.25rem;
 }

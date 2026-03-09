@@ -1,5 +1,6 @@
 <script>
   import ExternalLink from '$lib/components/icons/ExternalLink.svelte'
+  import View from './icons/View.svelte'
 
   const { repo, status } = $props()
 
@@ -96,13 +97,13 @@
         <li>
           <a href={`/${repo.name}`}>
             repository details
+            <View size={12} />
           </a>
         </li>
         <li>
           <a href={`https://github.com/fdnd-agency/${repo.name}`}>
-            
             show on GitHub
-            <ExternalLink size={16} />
+            <ExternalLink size={12} />
           </a>
         </li>
       </ul>
@@ -141,6 +142,7 @@
     min-height:100%;
     background:#eee;
     margin:0 .5rem;
+    font-size: .9rem;
 
     @media (min-width:30rem) {
       margin:0;
@@ -181,7 +183,6 @@
         display:flex;
         flex-direction: row;
         align-items:center;
-        font-size: .9rem;
 
         li {
           display: inherit;
@@ -206,7 +207,7 @@
       align-items: start;
       margin-bottom: 1rem;
       margin-top:1rem;
-      font-family:monospace;
+      overflow:auto;
 
       div {
         border-right:1px solid #ccc;
@@ -234,6 +235,10 @@
 
         ul {
           margin-bottom: 0;
+        }
+
+        code {
+          font-family: inherit;
         }
       }
 
@@ -268,13 +273,13 @@
       display:flex;
       align-items: center;
       min-height: 3.25rem;
-      font-family: monospace;
 
       ul {
         margin:0 0 0 auto;
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap:wrap;
         gap: .5rem;
-        align-items:start;
+        justify-content:end;
 
         @media (min-width: 60rem) {
           flex-direction:row;
