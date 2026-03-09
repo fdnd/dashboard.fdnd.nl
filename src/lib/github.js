@@ -32,6 +32,66 @@ async function safeFetch(url, token, options = {}) {
 }
 
 /**
+ * Weekly commit activity per contributor for a repo.
+ * Uses: GET /repos/{owner}/{repo}/stats/contributors
+ *
+ * Returns simplified data:
+ * [
+ *   {
+ *     login,
+ *     avatar_url,
+ *     weeks: [{ w, a, d, c }, ...]  // w = unix timestamp (sec), c = commits
+ *   }
+ * ]
+ *
+ * NOTE: GitHub may return 202 while calculating stats.
+ * safeFetch will then return null and we treat it as "no data yet".
+ */
+export async function fetchRepoContributorsStats(organization, repository, token) {
+  const url = `${API}/repos/${organization}/${repository}/stats/contributors`;
+
+  try {
+    // Get raw response so we can inspect status
+    const response = await ghFetch(url, token, { returnResponse: true });
+
+    // GitHub is still generating stats
+    if (response.status === 202) {
+      console.warn(
+        'Contributors stats not ready yet for',
+        `${organization}/${repository} (202 Accepted)`
+      );
+      return [];
+    }
+
+    const data = await response.json();
+
+    if (!Array.isArray(data)) {
+      console.warn(
+        'Unexpected contributors stats response for',
+        `${organization}/${repository}`,
+        data
+      );
+      return [];
+    }
+
+    // Map to a simplified shape, but keep author.type so we can detect bots
+    return data.map((item) => ({
+      login: item.author?.login ?? 'unknown',
+      avatar_url: item.author?.avatar_url ?? null,
+      type: item.author?.type ?? null, // "User", "Bot", etc.
+      weeks: item.weeks ?? []
+    }));
+  } catch (error) {
+    console.error(
+      'Failed to fetch contributors stats for',
+      `${organization}/${repository}`,
+      error
+    );
+    return [];
+  }
+}
+
+/**
  * Repository-level helpers used by the repo routes
  */
 
