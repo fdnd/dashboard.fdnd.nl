@@ -13,6 +13,21 @@
   // filter state
   let selectedYear = $state('all')
 
+  // which repo is expanded
+  let expandedRepo = $state(null)
+
+  function toggle(repoName) {
+    const update = () => {
+      expandedRepo = expandedRepo === repoName ? null : repoName
+    }
+
+    if (document.startViewTransition) {
+      document.startViewTransition(update)
+    } else {
+      update()
+    }
+  }
+
   // filtered repo list
   const filteredRepos = $derived(
     selectedYear === 'all'
@@ -21,7 +36,7 @@
           repo =>
             repo.metadata?.years?.includes(Number(selectedYear))
         )
-  )  
+  )
 </script>
 
 <section id={id}>
@@ -30,41 +45,58 @@
       {title}
     </h2>
 
-    <YearFilter
-      bind:selectedYear
-    />
+    <YearFilter bind:selectedYear />
   </header>
 
-  {#each filteredRepos as repo (repo.name)}
-    <RepoCard {repo} {status} />
-  {/each}
+  <div>
+    {#each filteredRepos as repo (repo.name)}
+      <RepoCard
+        {repo}
+        {status}
+        expanded={expandedRepo === repo.name}
+        onToggle={() => toggle(repo.name)}
+      />
+    {/each}
+  </div>
+  
 </section>
 
 <style>
   section {
-    display:flex;
-    flex-direction: column;
-    gap:2rem;
     max-width: var(--max-width);
     margin: 0 -1rem 3rem;
 
     > header {
-      grid-column: 1 / -1;
-      margin:0 1rem;
+      margin: 0 1rem 1rem;
       display: flex;
-      flex-direction:row;
+      flex-direction: row;
       justify-content: space-between;
-      align-items:end;
+      align-items: end;
     }
 
-    @media (min-width: 60rem) {
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      place-items:stretch;
-    }
+    div {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
 
-    @media (min-width: 80rem) {
-      grid-template-columns: 1fr 1fr 1fr;
+      @media (min-width: 60rem) {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr));
+        grid-auto-rows: minmax(18rem, auto); /* ensures row height can grow */
+        gap: 1rem;
+        align-items: start;
+        grid-auto-flow: row dense;
+      }
+
+      @media (min-width: 80rem) {
+        grid-template-columns: repeat(auto-fill, minmax(28rem, 1fr));
+      }
     }
+  }
+
+  /* smoother view transition timing */
+  ::view-transition-group(*) {
+    animation-duration: 300ms;
+    animation-timing-function: ease;
   }
 </style>

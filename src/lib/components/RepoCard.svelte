@@ -1,15 +1,15 @@
 <script>
   import ExternalLink from '$lib/components/icons/ExternalLink.svelte'
-  import View from './icons/View.svelte'
+  import View from '$lib/components/icons/View.svelte'
 
-  const { repo, status } = $props()
+  const { repo, status, expanded = false, onToggle } = $props()
 
   const hasMeta = $derived(
     !!repo.metadata && Object.keys(repo.metadata).length > 0
   )
 </script>
 
-<article class={status}>
+<article class="{status} {expanded ? 'expanded' : ''}" style="view-transition-name: repo-{repo.name}">
   <header>
     <div>
       <h3>
@@ -83,6 +83,14 @@
         </ul>
       </div>
     {/if}
+
+    <div class="activity">  
+      {#if expanded}
+        <div>
+          <img src="/activity.webp" alt="{repo.name} activity">
+        </div>
+      {/if}
+    </div>
   </div>
 
   {#if hasMeta}
@@ -93,6 +101,11 @@
         <span>epics</span>
       </button>
       {/if}   
+
+      <button onclick={onToggle}>
+        {expanded ? 'Hide activity' : 'Show activity'}
+      </button>
+
       <ul>
         <li>
           <a href={`/${repo.name}`}>
@@ -146,6 +159,14 @@
 
     @media (min-width:30rem) {
       margin:0;
+    }
+
+    &.expanded{
+      @media (min-width: 60rem) {
+        grid-column: span 2;
+        grid-row: span 2;
+        z-index: 5; /* ensure it overlaps neighbors if needed */
+      }
     }
 
     header {
@@ -207,22 +228,41 @@
       align-items: start;
       margin-bottom: 1rem;
       margin-top:1rem;
-      overflow:auto;
 
       div {
-        border-right:1px solid #ccc;
+        border-left:1px solid #ccc;
         padding:0 1rem;
         margin: 0 calc(-1rem - .5px);
 
         &:first-child {
           border-left:none;
           margin:0;
+          padding-left:0;
           align-self:stretch;
         }
 
         &:last-child {
           border:none;
           margin:0;
+        }
+
+        &.activity {
+          margin: 1rem -1rem 0;
+          grid-column: 1 / -1;
+          position: relative;
+          display:flex;
+          gap:1rem;
+          flex-direction: column;
+          align-items:center;
+
+          div {
+            padding:0;
+          }
+
+          img {
+            max-width: 100%;
+            border-radius: .5rem;
+          }
         }
 
         h4{
@@ -241,6 +281,8 @@
           font-family: inherit;
         }
       }
+
+      
 
     }
 
@@ -264,6 +306,24 @@
       }
     }
 
+    button {
+      --_background: #e3e3e3;
+      align-self:start;
+      padding:.25rem .5rem;
+      border: 1px solid var(--blue);
+      background:var(--_background);
+      display:flex;
+      gap:.25rem;
+      align-self:center;
+      align-items:center;
+      cursor: pointer;
+
+      &:hover,
+      &:focus-visible {
+        --_background: var(--green);
+      }
+    }
+
     footer {
       background-color: transparent;
       margin:auto -1rem -1rem;
@@ -271,6 +331,7 @@
       border-radius: 0 0 var(--small-radius) var(--small-radius);
       border-top:1px solid currentColor;
       display:flex;
+      gap:.25rem;
       align-items: center;
       min-height: 3.25rem;
 
@@ -283,24 +344,6 @@
 
         @media (min-width: 60rem) {
           flex-direction:row;
-        }
-      }
-
-      button {
-        --_background: #e3e3e3;
-        align-self:start;
-        padding:.25rem .5rem;
-        border: 1px solid var(--blue);
-        background:var(--_background);
-        display:flex;
-        gap:.25rem;
-        align-self:center;
-        align-items:center;
-        cursor: pointer;
-
-        &:hover,
-        &:focus-visible {
-          --_background: var(--green);
         }
       }
 
