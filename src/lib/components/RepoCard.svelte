@@ -1,28 +1,30 @@
 <script>
   import ExternalLink from '$lib/components/icons/ExternalLink.svelte'
   import View from '$lib/components/icons/View.svelte'
+  import { browser } from '$app/environment'
 
+  // props from parent (RepoList)
   const { repo, status, expanded = false, onToggle } = $props()
 
+  // derived reactive value: does this repo have metadata?
   const hasMeta = $derived(
     !!repo.metadata && Object.keys(repo.metadata).length > 0
   )
 </script>
 
-<article class="{status} {expanded ? 'expanded' : ''}" style="view-transition-name: repo-{repo.name}">
+<article 
+  id={repo.name} 
+  class="{status} {expanded ? 'expanded' : ''}" 
+  style="view-transition-name: repo-{repo.name}" 
+>
+  <!-- HEADER: repo title, client, years -->
   <header>
     <div>
-      <h3>
-        <span>
-          {hasMeta ? repo.metadata.title : repo.name}
-        </span>
-      </h3>
+      <h3><span>{hasMeta ? repo.metadata.title : repo.name}</span></h3>
 
       <ul>
         {#each repo.metadata?.years ?? [] as year}
-          <li>
-            <span>🎓 year {year}</span>
-          </li>
+          <li><span>🎓 year {year}</span></li>
         {/each}
       </ul>
     </div>
@@ -32,6 +34,7 @@
     {/if}
   </header>
 
+  <!-- DETAILS: team, live sites, tech stack, activity chart -->
   <div class="details">
     {#if repo.team?.members?.length}
       <div>
@@ -39,13 +42,7 @@
         <ul>
           {#each repo.team.members as member (member.login)}
             <li>
-              <img
-                width="24"
-                height="24"
-                src={member.avatar_url}
-                alt={member.login}
-                class="avatar"
-              />
+              <img width="24" height="24" src={member.avatar_url} alt={member.login} class="avatar" />
               <span>{member.login}</span>
             </li>
           {/each}
@@ -57,18 +54,8 @@
       <div>
         <h4>Live sites</h4>
         <ul>
-          <li>
-            <a href={repo.metadata.main_link}>
-              <code>main</code>
-              <ExternalLink size={12} />
-            </a>
-          </li>
-          <li>
-            <a href={repo.metadata.dev_link}>
-              <code>dev</code>
-              <ExternalLink size={12} />
-            </a>
-          </li>
+          <li><a href={repo.metadata.main_link}><code>main</code><ExternalLink size={12} /></a></li>
+          <li><a href={repo.metadata.dev_link}><code>dev</code><ExternalLink size={12} /></a></li>
         </ul>
       </div>
 
@@ -76,23 +63,26 @@
         <h4>Tech stack</h4>
         <ul>
           {#each repo.metadata.tech_stack as tech}
-            <li>
-              <code>{tech}</code>
-            </li>
+            <li><code>{tech}</code></li>
           {/each}
         </ul>
       </div>
     {/if}
 
+    <!-- ACTIVITY CHART: shown when expanded -->
     <div class="activity">  
-      {#if expanded}
         <div>
           <img src="/activity.webp" alt="{repo.name} activity">
+          {#if !browser}
+            <!-- fallback link when JS isn't available in the browser -->
+            <a class="collapse" href="#all-projects">Hide activity</a>
+          {/if}
+          
         </div>
-      {/if}
     </div>
   </div>
 
+  <!-- FOOTER: links and epics modal -->
   {#if hasMeta}
     <footer>
       {#if repo.epics?.length > 0}
@@ -102,39 +92,31 @@
       </button>
       {/if}   
 
-      <button onclick={onToggle}>
+      <!-- expand/collapse toggle -->
+      <a href="#{repo.name}" onclick={(e) => {
+        e.preventDefault()          // prevent immediate browser jump
+        onToggle()                  // expand via View Transition
+        history.pushState(null, '', `#${repo.name}`) // update URL hash
+      }}>
         {expanded ? 'Hide activity' : 'Show activity'}
-      </button>
+      </a>
 
+      <!-- other links -->
       <ul>
-        <li>
-          <a href={`/${repo.name}`}>
-            repository details
-            <View size={12} />
-          </a>
-        </li>
-        <li>
-          <a href={`https://github.com/fdnd-agency/${repo.name}`}>
-            show on GitHub
-            <ExternalLink size={12} />
-          </a>
-        </li>
+        <li><a href={`/${repo.name}`}>repository details<View size={12} /></a></li>
+        <li><a href={`https://github.com/fdnd-agency/${repo.name}`}>show on GitHub<ExternalLink size={12} /></a></li>
       </ul>
+
+      <!-- epics modal -->
       {#if repo.epics?.length > 0}
       <dialog id="backlog-{repo.name}">
         <h4><em>{hasMeta ? repo.metadata.title : repo.name}</em> <span>Epics</span></h4>
-
         <ul>
-        {#each repo.epics as epic}
-          <li>
-            <a href="{epic.url}">{epic.title}</a>
-          </li>
-        {/each}
+          {#each repo.epics as epic}
+            <li><a href="{epic.url}">{epic.title}</a></li>
+          {/each}
         </ul>
-           
-        <button commandfor="backlog-{repo.name}" command="close">
-          close
-        </button>
+        <button commandfor="backlog-{repo.name}" command="close">close</button>
       </dialog>
       {/if} 
     </footer>
@@ -161,11 +143,17 @@
       margin:0;
     }
 
-    &.expanded{
+    &:target,
+    &.expanded {
       @media (min-width: 60rem) {
         grid-column: span 2;
         grid-row: span 2;
         z-index: 5; /* ensure it overlaps neighbors if needed */
+        scroll-margin-top: 4rem;
+      }
+
+      div.details > div.activity > div {
+        display:flex;
       }
     }
 
@@ -221,12 +209,12 @@
       --_fill: #e3e3e3;
     }
 
-    div.details {
+    .details {
       display:grid;
       grid-template-columns: 1fr 1fr 1fr;
       gap:1rem;
       align-items: start;
-      margin-bottom: 1rem;
+      margin-bottom: 0;
       margin-top:1rem;
 
       div {
@@ -256,12 +244,20 @@
           align-items:center;
 
           div {
+            display: none;
             padding:0;
-          }
+            flex-direction:column;
 
-          img {
-            max-width: 100%;
-            border-radius: .5rem;
+          
+            img {
+              max-width: 100%;
+              border-radius: .5rem;
+            }
+
+            .collapse {
+              align-self:end;
+              margin-top: .5rem;
+            }
           }
         }
 
