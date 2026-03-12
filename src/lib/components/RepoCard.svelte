@@ -3,10 +3,8 @@
   import View from '$lib/components/icons/View.svelte'
   import { browser } from '$app/environment'
 
-  // props from parent (RepoList)
   const { repo, status, expanded = false, onToggle } = $props()
 
-  // derived reactive value: does this repo have metadata?
   const hasMeta = $derived(
     !!repo.metadata && Object.keys(repo.metadata).length > 0
   )
@@ -17,7 +15,6 @@
   class="{status} {expanded ? 'expanded' : ''}" 
   style="view-transition-name: repo-{repo.name}" 
 >
-  <!-- HEADER: repo title, client, years -->
   <header>
     <div>
       <h3><span>{hasMeta ? repo.metadata.title : repo.name}</span></h3>
@@ -34,7 +31,6 @@
     {/if}
   </header>
 
-  <!-- DETAILS: team, live sites, tech stack, activity chart -->
   <div class="details">
     {#if repo.team?.members?.length}
       <div>
@@ -69,12 +65,11 @@
       </div>
     {/if}
 
-    <!-- ACTIVITY CHART: shown when expanded -->
     <div class="activity">  
         <div>
           <img src="/activity.webp" alt="{repo.name} activity">
+          
           {#if !browser}
-            <!-- fallback link when JS isn't available in the browser -->
             <a class="collapse" href="#all-projects">Hide activity</a>
           {/if}
           
@@ -82,7 +77,6 @@
     </div>
   </div>
 
-  <!-- FOOTER: links and epics modal -->
   {#if hasMeta}
     <footer>
       {#if repo.epics?.length > 0}
@@ -92,22 +86,19 @@
       </button>
       {/if}   
 
-      <!-- expand/collapse toggle -->
       <a href="#{repo.name}" onclick={(e) => {
-        e.preventDefault()          // prevent immediate browser jump
-        onToggle()                  // expand via View Transition
-        history.pushState(null, '', `#${repo.name}`) // update URL hash
+        e.preventDefault()
+        onToggle()
+        history.pushState(null, '', `#${repo.name}`)
       }}>
         {expanded ? 'Hide activity' : 'Show activity'}
       </a>
 
-      <!-- other links -->
       <ul>
         <li><a href={`/${repo.name}`}>repository details<View size={12} /></a></li>
         <li><a href={`https://github.com/fdnd-agency/${repo.name}`}>show on GitHub<ExternalLink size={12} /></a></li>
       </ul>
 
-      <!-- epics modal -->
       {#if repo.epics?.length > 0}
       <dialog id="backlog-{repo.name}">
         <h4><em>{hasMeta ? repo.metadata.title : repo.name}</em> <span>Epics</span></h4>
@@ -148,7 +139,7 @@
       @media (min-width: 60rem) {
         grid-column: span 2;
         grid-row: span 2;
-        z-index: 5; /* ensure it overlaps neighbors if needed */
+        z-index: 5;
         scroll-margin-top: 4rem;
       }
 
@@ -188,7 +179,7 @@
       ul {
         position:absolute;
         right:0;
-        bottom:-4.25rem;
+        top:.5rem;
         display:flex;
         flex-direction: row;
         align-items:center;

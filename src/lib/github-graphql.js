@@ -1,19 +1,6 @@
-// src/lib/github-graphql.js
 import { graphql } from '@octokit/graphql'
 import yaml from 'js-yaml'
 
-/**
- * Fetches all data needed for the dashboard:
- * - org teams
- * - per team: members + repos
- * - per repo: repo_metadata.yml + "epic" issues
- *
- * It returns { org, teams, repos } where each repo matches what
- * your existing Svelte components expect:
- * - repo.metadata.* (title, years, client, main_link, dev_link, tech_stack, status, ...)
- * - repo.team.members[*].login / .avatar_url
- * - repo.epics[*].url / .title (and some extra fields you may use later)
- */
 export async function fetchDashboardData(org, token) {
   const client = graphql.defaults({
     headers: {
@@ -95,14 +82,12 @@ export async function fetchDashboardData(org, token) {
     const rawMembers = team.members?.nodes ?? []
     if (!rawMembers.length) continue
 
-    // Normalize members so RepoCard gets member.login + member.avatar_url
     const members = rawMembers.map((m) => ({
       login: m.login,
       avatar_url: m.avatarUrl
     }))
 
     for (const repo of team.repositories?.nodes ?? []) {
-      // Parse YAML metadata if present
       let metadata = {}
       if (repo.metadata && repo.metadata.text) {
         try {
@@ -115,7 +100,6 @@ export async function fetchDashboardData(org, token) {
         }
       }
 
-      // Map epic issues to what RepoCard uses (url + title extra fields are ok)
       const issues = repo.issues?.nodes ?? []
       const epics = issues.map((issue) => ({
         number: issue.number,
@@ -132,25 +116,24 @@ export async function fetchDashboardData(org, token) {
       }))
 
       repos.push({
-        name: repo.name,                  // used in RepoCard links and keys
+        name: repo.name,                  
         full_name: repo.nameWithOwner,
         html_url: repo.url,
         default_branch: repo.defaultBranchRef?.name ?? 'main',
-        metadata,                         // repo_metadata.yml used for title, years, links, tech_stack, client, status
+        metadata,                         
         team: {
           name: team.name,
           slug: team.slug,
-          members                         // normalized members with avatar_url
+          members                         
         },
-        epics,                            // used in RepoCard for modal + button
+        epics,                           
         epic_summary: epics.length
       })
     }
   }
 
-  // Deduplicate repos (in case multiple teams can access the same repo)
   const uniqueRepos = Array.from(
-    new Map(repos.map((r) => [r.full_name, r])).values()
+    new Map(repos.map((repo) => [repo.full_name, repo])).values()
   )
 
   return {

@@ -1,11 +1,14 @@
 <script>
   import Breadcrumb from '$lib/components/Breadcrumb.svelte'
+  import MainHeader from '$lib/components/MainHeader.svelte'
   import RepoList from '$lib/components/RepoList.svelte'
 
   const { data } = $props()
-  const repos = data.repos
+  const { repos } = data
 
-  const repoGroups = () => {
+  const { active, inactive } = repoStatusGroups()
+
+  function repoStatusGroups () {
     const active = []
     const inactive = []
 
@@ -19,34 +22,11 @@
 
     return { active, inactive }
   }
-
-  const { active, inactive } = repoGroups()
 </script>
 
 <Breadcrumb items={[{ label: 'Dashboard', home: true }]} />
 
-<header id="all-projects">
-  <h1>FDND Agency</h1>
-</header>
+<MainHeader />
 
-<RepoList
-  title="Active projects 🔥"
-  id="active-projects"
-  status="active"
-  repos={active}
-/>
-
-<RepoList
-  title="Inactive projects 🧊"
-  id="inactive-projects"
-  status="inactive"
-  repos={inactive}
-/>
-
-<style>
-  header {
-    h1 {
-      font-weight: normal;
-    }
-  }
-</style>
+<RepoList title="Active projects 🔥" id="active-projects" status="active" repos={active} />
+<RepoList title="Inactive projects 🧊" id="inactive-projects" status="inactive" repos={inactive} />
