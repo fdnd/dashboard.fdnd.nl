@@ -1,6 +1,8 @@
 import { GITHUB_TOKEN, GITHUB_ORGANIZATION } from '$env/static/private'
 import { fetchMemberActivity } from '$lib/github-activity.js'
 
+export const prerender = true
+
 export async function load() {
   const org = GITHUB_ORGANIZATION
 
