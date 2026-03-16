@@ -483,12 +483,15 @@
         }
       }
 
+
+
       a {
         text-decoration: none;
         display: flex;
         gap:.25rem;
         align-items: center;
         text-decoration:underline;
+        white-space: nowrap;
         
         &:hover, &:focus-visible {
           text-decoration:none;
