@@ -1,7 +1,7 @@
 <script>
   import RepoCard from '$lib/components/RepoCard.svelte'
   import YearFilter from '$lib/components/YearFilter.svelte'
-  import { browser } from '$app/environment' 
+  import { browser } from '$app/environment'
 
   let { title, id, repos = [], status } = $props()
 
@@ -11,123 +11,106 @@
   const filteredRepos = $derived(
     selectedYear === 'all'
       ? repos
-      : repos.filter(repo =>
+      : repos.filter((repo) =>
           repo.metadata?.years?.includes(Number(selectedYear))
         )
   )
 
+  // Mark JS-enabled for CSS (so :target can be disabled when JS runs)
+  if (browser) {
+    document.documentElement.classList.add('js')
+  }
+
   $effect(() => {
     if (!browser) return
-    
-    updateExpanded()
 
-    window.addEventListener('hashchange', updateExpanded)
-
-    function updateExpanded () {
-
+    const updateExpanded = () => {
       const hash = window.location.hash.slice(1)
-      // Extract repo name from URL fragment (#repo-name).
 
-      if (hash && repos.find(repo => repo.name === hash)) {
-        // If a matching repo exists, expand it.
-
-        const update = () => expandedRepo = hash
+      if (hash && repos.find((repo) => repo.name === hash)) {
+        const update = () => {
+          expandedRepo = hash
+        }
 
         if (document.startViewTransition) {
           document.startViewTransition(update)
-          // Animate expansion if supported.
         } else {
           update()
         }
 
         const el = document.getElementById(hash)
-
         if (el) {
           el.scrollIntoView({
             behavior: 'smooth',
             block: 'start'
           })
         }
-
       } else {
+        // No valid hash → collapse all cards
         expandedRepo = null
-        // No valid hash → collapse all cards.
       }
     }
+
+    // Handle initial hash on page load
+    updateExpanded()
+
+    // Handle real hashchange events (e.g. manual hash edits)
+    window.addEventListener('hashchange', updateExpanded)
 
     return () => window.removeEventListener('hashchange', updateExpanded)
   })
 
   function toggle(repoName) {
-
     const update = () => {
-      // Toggle logic:
-      // if this repo is already expanded → collapse
-      // otherwise expand this repo
       expandedRepo = expandedRepo === repoName ? null : repoName
     }
 
-    if (document.startViewTransition) {
-      // View Transitions API
-      // Animates layout changes between DOM states.
-
-      const transition = document.startViewTransition(update)
-
-      transition?.finished.then(() => {
-        // Wait until the transition finishes before scrolling.
-        // Prevents the grid from jumping mid-animation.
-
-        const el = document.getElementById(repoName)
-
-        if (el) {
-          const offset = 6 * 16
-          // Offset compensates for a sticky header (6rem).
-
-          const top =
-            el.getBoundingClientRect().top +
-            window.scrollY -
-            offset
-          // Calculates the element's absolute position in the page.
-
-          window.scrollTo({ top, behavior: 'smooth' })
-          // Scrolls smoothly to the expanded card.
-        }
-
+    const afterUpdate = () => {
+      // Keep URL hash in sync with state
+      if (expandedRepo === repoName) {
+        // Expanded → set hash for deep-linking
+        history.pushState(null, '', `#${repoName}`)
+      } else {
+        // Collapsed → clear hash (keep path + query)
         history.pushState(
           null,
           '',
-          expandedRepo === repoName ? `#${repoName}` : ' '
+          window.location.pathname + window.location.search
         )
-        // Updates the URL hash without triggering navigation.
-        // Enables deep-linking to expanded cards.
+      }
+    }
+
+    if (document.startViewTransition) {
+      const transition = document.startViewTransition(update)
+
+      transition?.finished.then(() => {
+        const el = document.getElementById(repoName)
+        if (el) {
+          const offset = 6 * 16
+          const top =
+            el.getBoundingClientRect().top + window.scrollY - offset
+
+          window.scrollTo({ top, behavior: 'smooth' })
+        }
+
+        afterUpdate()
       })
-
     } else {
-      // Fallback for browsers without View Transition support.
-
       update()
 
       const el = document.getElementById(repoName)
-
       if (el) {
         const offset = 6 * 16
         const top =
-          el.getBoundingClientRect().top +
-          window.scrollY -
-          offset
+          el.getBoundingClientRect().top + window.scrollY - offset
 
         window.scrollTo({ top, behavior: 'smooth' })
       }
 
-      history.pushState(
-        null,
-        '',
-        expandedRepo === repoName ? `#${repoName}` : ' '
-      )
+      afterUpdate()
     }
   }
 </script>
-
 
 <section id={id}>
   <header>
@@ -147,7 +130,6 @@
     {/each}
   </div>
 </section>
-
 
 <style>
   section {

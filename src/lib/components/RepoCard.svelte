@@ -10,10 +10,10 @@
   )
 </script>
 
-<article 
-  id={repo.name} 
-  class="{status} {expanded ? 'expanded' : ''}" 
-  style="view-transition-name: repo-{repo.name}" 
+<article
+  id={repo.name}
+  class="{status} {expanded ? 'expanded' : ''}"
+  style="view-transition-name: repo-{repo.name}"
 >
   <header>
     <div>
@@ -38,7 +38,13 @@
         <ul>
           {#each repo.team.members as member (member.login)}
             <li>
-              <img width="24" height="24" src={member.avatar_url} alt={member.login} class="avatar" />
+              <img
+                width="24"
+                height="24"
+                src={member.avatar_url}
+                alt={member.login}
+                class="avatar"
+              />
               <span>{member.login}</span>
             </li>
           {/each}
@@ -50,8 +56,16 @@
       <div>
         <h4>Live sites</h4>
         <ul>
-          <li><a href={repo.metadata.main_link}><code>main</code><ExternalLink size={12} /></a></li>
-          <li><a href={repo.metadata.dev_link}><code>dev</code><ExternalLink size={12} /></a></li>
+          <li>
+            <a href={repo.metadata.main_link}>
+              <code>main</code><ExternalLink size={12} />
+            </a>
+          </li>
+          <li>
+            <a href={repo.metadata.dev_link}>
+              <code>dev</code><ExternalLink size={12} />
+            </a>
+          </li>
         </ul>
       </div>
 
@@ -65,51 +79,91 @@
       </div>
     {/if}
 
-    <div class="activity">  
-        <div>
-          <img src="/activity.webp" alt="{repo.name} activity">
-          
-          {#if !browser}
-            <a class="collapse" href="#all-projects">Hide activity</a>
-          {/if}
-          
-        </div>
+    <div class="activity">
+      <div>
+        <img src="/activity.webp" alt="{repo.name} activity" />
+
+        {#if !browser}
+          <a class="collapse" href="#all-projects">Hide activity</a>
+        {/if}
+      </div>
     </div>
   </div>
 
   {#if hasMeta}
     <footer>
       {#if repo.epics?.length > 0}
-      <button command="show-modal" commandfor="backlog-{repo.name}">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-checkup-list"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" /><path d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2" /><path d="M9 14h.01" /><path d="M9 17h.01" /><path d="M12 16l1 1l3 -3" /></svg>
-        <span>epics</span>
-      </button>
-      {/if}   
+        <button command="show-modal" commandfor="backlog-{repo.name}">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="icon icon-tabler icons-tabler-outline icon-tabler-checkup-list"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path
+              d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"
+            />
+            <path
+              d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2"
+            />
+            <path d="M9 14h.01" />
+            <path d="M9 17h.01" />
+            <path d="M12 16l1 1l3 -3" />
+          </svg>
+          <span>epics</span>
+        </button>
+      {/if}
 
-      <a href="#{repo.name}" onclick={(e) => {
-        e.preventDefault()
-        onToggle()
-        history.pushState(null, '', `#${repo.name}`)
-      }}>
+      <!-- Progressive enhancement:
+           - No JS: href="#repo.name" navigates and :target expands via CSS
+           - JS: onclick prevents navigation and just calls onToggle()
+      -->
+      <a
+        href="#{repo.name}"
+        onclick={(e) => {
+          e.preventDefault()
+          onToggle()
+        }}
+      >
         {expanded ? 'Hide activity' : 'Show activity'}
       </a>
 
       <ul>
-        <li><a href={`/${repo.name}`}>repository details<View size={12} /></a></li>
-        <li><a href={`https://github.com/fdnd-agency/${repo.name}`}>show on GitHub<ExternalLink size={12} /></a></li>
+        <li>
+          <a href={`/${repo.name}`}>
+            repository details<View size={12} />
+          </a>
+        </li>
+        <li>
+          <a href={`https://github.com/fdnd-agency/${repo.name}`}>
+            show on GitHub<ExternalLink size={12} />
+          </a>
+        </li>
       </ul>
 
       {#if repo.epics?.length > 0}
-      <dialog id="backlog-{repo.name}">
-        <h4><em>{hasMeta ? repo.metadata.title : repo.name}</em> <span>Epics</span></h4>
-        <ul>
-          {#each repo.epics as epic}
-            <li><a href="{epic.url}">{epic.title}</a></li>
-          {/each}
-        </ul>
-        <button commandfor="backlog-{repo.name}" command="close">close</button>
-      </dialog>
-      {/if} 
+        <dialog id="backlog-{repo.name}">
+          <h4>
+            <em>{hasMeta ? repo.metadata.title : repo.name}</em>
+            <span>Epics</span>
+          </h4>
+          <ul>
+            {#each repo.epics as epic}
+              <li><a href="{epic.url}">{epic.title}</a></li>
+            {/each}
+          </ul>
+          <button commandfor="backlog-{repo.name}" command="close">
+            close
+          </button>
+        </dialog>
+      {/if}
     </footer>
   {/if}
 </article>
@@ -134,17 +188,12 @@
       margin:0;
     }
 
-    &:target,
     &.expanded {
       @media (min-width: 60rem) {
         grid-column: span 2;
         grid-row: span 2;
         z-index: 5;
         scroll-margin-top: 4rem;
-      }
-
-      div.details > div.activity > div {
-        display:flex;
       }
     }
 
@@ -239,7 +288,6 @@
             padding:0;
             flex-direction:column;
 
-          
             img {
               max-width: 100%;
               border-radius: .5rem;
@@ -268,9 +316,6 @@
           font-family: inherit;
         }
       }
-
-      
-
     }
 
     ul {
@@ -279,7 +324,6 @@
       gap:.5rem;
       margin:0 0 1rem;
       
-
       li {
         display:flex;
         gap:.25rem;
@@ -374,11 +418,34 @@
         align-items: center;
         text-decoration:underline;
         
-
         &:hover, &:focus-visible {
           text-decoration:none;
         }
       }
     }
+  }
+
+  /* --- Progressive enhancement glue ---
+     No JS: :target expands the card
+     JS: .expanded (Svelte state) expands the card
+  */
+
+  /* No JS: :target → expanded layout + show activity content */
+  :global(html:not(.js) article:target) {
+    @media (min-width: 60rem) {
+      grid-column: span 2;
+      grid-row: span 2;
+      z-index: 5;
+      scroll-margin-top: 4rem;
+    }
+  }
+
+  :global(html:not(.js) article:target div.details > div.activity > div) {
+    display:flex;
+  }
+
+  /* JS: .expanded → same behaviour; :target is ignored in JS mode */
+  :global(html.js article.expanded div.details > div.activity > div) {
+    display:flex;
   }
 </style>
