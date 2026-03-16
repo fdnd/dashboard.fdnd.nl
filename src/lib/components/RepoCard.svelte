@@ -123,7 +123,7 @@
             {#each repo.metadata.team as member}
               <tr>
                 <td>
-                  <a href="https://github.com/{member.github}" target="_blank" rel="noreferrer">{member.name}</a>
+                  <a href="https://github.com/{member.github}" target="_blank" rel="noreferrer">{member.name} @{member.github}</a>
                 </td>
 
                 {#each [8, 9, 10, 11] as sprint}
@@ -134,10 +134,10 @@
                         target="_blank"
                         rel="noreferrer"
                       >
-                        {getSprintName(sprint)} @{member.github}
+                        {getSprintName(sprint)} 
                       </a>
                     {:else}
-                      {getSprintName(sprint)} not started yet
+                      {getSprintName(sprint)}
                     {/if}
                   </td>
                 {/each}
