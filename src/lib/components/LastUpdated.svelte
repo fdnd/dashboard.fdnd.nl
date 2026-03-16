@@ -45,8 +45,8 @@
   p {
     --_position-right: var(--padding-side);
     position:absolute;
-    right:2rem;
-    margin-top: 2rem;
+    right:1rem;
+    margin-top: .25rem;
     display:flex;
     align-items:center;
     gap:.25rem;
@@ -56,7 +56,8 @@
     }
 
     @media (min-width:30rem) {
-      --_position-right: calc(var(--padding-side) * 2)
+      --_position-right: calc(var(--padding-side) * 2);
+      right:2rem;
     }
   }
 </style>
