@@ -33,11 +33,13 @@
     font-family: inherit;
     color:currentColor;
     border-radius:.5rem;
+    border-color: var(--blue);
     background-color: #e3e3e3;
 
     &:focus-visible {
       outline:none;
-      box-shadow:0 0 0 2px rgb(0,0,0,.1)
+      box-shadow:0 0 5px 2px rgb(0,0,0,.15);
+      border-color: var(--purple)
     }
   }
 </style>

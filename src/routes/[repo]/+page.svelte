@@ -20,19 +20,19 @@
   } = data
 
   const memberMap = {}
+  
   teamMembers.forEach(member => {
     memberMap[member.login] = member
   })
 
   const pullRequestStats = {}
+  
   for (const [login, prs] of Object.entries(pullRequestsByMember)) {
     pullRequestStats[login] = {
       open: prs.open.length,
       closed: prs.closed.length
     }
   }
-
-  const periodLabel = 'last 6 months'
 </script>
 
 <section class="simple-grid">

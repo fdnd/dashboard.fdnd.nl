@@ -1,8 +1,5 @@
 const API = 'https://api.github.com'
 
-/**
- * Low-level GitHub fetch helper
- */
 export async function ghFetch(url, token, { raw = false, returnResponse = false } = {}) {
   const response = await fetch(url, {
     headers: {
@@ -19,9 +16,6 @@ export async function ghFetch(url, token, { raw = false, returnResponse = false 
   return returnResponse ? response : raw ? response.text() : response.json()
 }
 
-/**
- * Helper to log and recover from errors
- */
 async function safeFetch(url, token, options = {}) {
   try {
     return await ghFetch(url, token, options)
@@ -31,29 +25,21 @@ async function safeFetch(url, token, options = {}) {
   }
 }
 
-/**
- * Repository-level helpers used by the repo routes
- */
-
-// Teams for a given repo
 export async function fetchRepoTeams(organization, repository, token) {
   const url = `${API}/repos/${organization}/${repository}/teams?per_page=100`
   return safeFetch(url, token)
 }
 
-// Members of a team
 export async function fetchTeamMembers(organization, team, token) {
   const url = `${API}/orgs/${organization}/teams/${team}/members?per_page=100`
   return safeFetch(url, token)
 }
 
-// Branch list
 export async function fetchRepoBranches(organization, repository, token) {
   const url = `${API}/repos/${organization}/${repository}/branches?per_page=100`
   return safeFetch(url, token)
 }
 
-// Pull requests (open + closed) for a repo
 export async function fetchRepoPullRequests(organization, repository, token) {
   const url = `${API}/repos/${organization}/${repository}/pulls?state=all&per_page=100`
   const pullRequests = await safeFetch(url, token)
@@ -73,7 +59,6 @@ export async function fetchRepoPullRequests(organization, repository, token) {
     : []
 }
 
-// Commit details for a specific SHA (used on /repo/branch/commit)
 export async function fetchCommitDetails(organization, repository, sha, token) {
   const url = `${API}/repos/${organization}/${repository}/commits/${sha}`
   const data = await safeFetch(url, token)
@@ -97,16 +82,6 @@ export async function fetchCommitDetails(organization, repository, sha, token) {
   }
 }
 
-/**
- * Commits for a branch.
- *
- * Used in:
- * - /repo/branch (to list commits)
- * - /repo (to aggregate commit counts per member)
- *
- * Only commits since the optional `since` date are returned,
- * and at most `maxCommits` are fetched.
- */
 export async function fetchBranchCommits(
   organization,
   repository,

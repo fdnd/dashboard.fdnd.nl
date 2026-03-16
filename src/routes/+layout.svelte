@@ -15,9 +15,9 @@
 <Header />
 
 <main>
-	{@render children()}
-
 	<LastUpdated latestDeployAt={data.latestDeployAt} />
+	
+	{@render children()}
 
 	<RateLimit { data } />
 </main>

@@ -1,70 +1,172 @@
 <script>
-  import ExternalLink from '$lib/components/icons/ExternalLink.svelte'
   import RepoCard from '$lib/components/RepoCard.svelte'
   import YearFilter from '$lib/components/YearFilter.svelte'
+  import { browser } from '$app/environment'
 
-  let {
-    title,
-    id,
-    repos = [],
-    status
-  } = $props()
+  let { title, id, repos = [], status } = $props()
 
-  // filter state
   let selectedYear = $state('all')
+  let expandedRepo = $state(null)
 
-  // filtered repo list
   const filteredRepos = $derived(
     selectedYear === 'all'
       ? repos
-      : repos.filter(
-          repo =>
-            repo.metadata?.years?.includes(Number(selectedYear))
+      : repos.filter((repo) =>
+          repo.metadata?.years?.includes(Number(selectedYear))
         )
-  )  
+  )
+
+  // Mark JS-enabled for CSS (so :target can be disabled when JS runs)
+  if (browser) {
+    document.documentElement.classList.add('js')
+  }
+
+  $effect(() => {
+    if (!browser) return
+
+    const updateExpanded = () => {
+      const hash = window.location.hash.slice(1)
+
+      if (hash && repos.find((repo) => repo.name === hash)) {
+        const update = () => {
+          expandedRepo = hash
+        }
+
+        if (document.startViewTransition) {
+          document.startViewTransition(update)
+        } else {
+          update()
+        }
+
+        const el = document.getElementById(hash)
+        if (el) {
+          el.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          })
+        }
+      } else {
+        // No valid hash → collapse all cards
+        expandedRepo = null
+      }
+    }
+
+    // Handle initial hash on page load
+    updateExpanded()
+
+    // Handle real hashchange events (e.g. manual hash edits)
+    window.addEventListener('hashchange', updateExpanded)
+
+    return () => window.removeEventListener('hashchange', updateExpanded)
+  })
+
+  function toggle(repoName) {
+    const update = () => {
+      expandedRepo = expandedRepo === repoName ? null : repoName
+    }
+
+    const afterUpdate = () => {
+      // Keep URL hash in sync with state
+      if (expandedRepo === repoName) {
+        // Expanded → set hash for deep-linking
+        history.pushState(null, '', `#${repoName}`)
+      } else {
+        // Collapsed → clear hash (keep path + query)
+        history.pushState(
+          null,
+          '',
+          window.location.pathname + window.location.search
+        )
+      }
+    }
+
+    if (document.startViewTransition) {
+      const transition = document.startViewTransition(update)
+
+      transition?.finished.then(() => {
+        const el = document.getElementById(repoName)
+        if (el) {
+          const offset = 6 * 16
+          const top =
+            el.getBoundingClientRect().top + window.scrollY - offset
+
+          window.scrollTo({ top, behavior: 'smooth' })
+        }
+
+        afterUpdate()
+      })
+    } else {
+      update()
+
+      const el = document.getElementById(repoName)
+      if (el) {
+        const offset = 6 * 16
+        const top =
+          el.getBoundingClientRect().top + window.scrollY - offset
+
+        window.scrollTo({ top, behavior: 'smooth' })
+      }
+
+      afterUpdate()
+    }
+  }
 </script>
 
 <section id={id}>
   <header>
-    <h2>
-      {title}
-    </h2>
+    <h2>{title}</h2>
 
-    <YearFilter
-      bind:selectedYear
-    />
+    <YearFilter bind:selectedYear />
   </header>
 
-  {#each filteredRepos as repo (repo.name)}
-    <RepoCard {repo} {status} />
-  {/each}
+  <div>
+    {#each filteredRepos as repo (repo.name)}
+      <RepoCard
+        {repo}
+        {status}
+        expanded={expandedRepo === repo.name}
+        onToggle={() => toggle(repo.name)}
+      />
+    {/each}
+  </div>
 </section>
 
 <style>
   section {
-    display:flex;
-    flex-direction: column;
-    gap:2rem;
     max-width: var(--max-width);
     margin: 0 -1rem 3rem;
 
     > header {
-      grid-column: 1 / -1;
-      margin:0 1rem;
+      margin: 0 1rem 1rem;
+
       display: flex;
-      flex-direction:row;
       justify-content: space-between;
-      align-items:end;
+      align-items: end;
     }
 
-    @media (min-width: 60rem) {
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      place-items:stretch;
-    }
+    div {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
 
-    @media (min-width: 80rem) {
-      grid-template-columns: 1fr 1fr 1fr;
+      @media (min-width: 60rem) {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr));
+        grid-auto-rows: minmax(fit-content, auto);
+        gap: 1rem;
+        align-items: start;
+
+        grid-auto-flow: row dense;
+      }
+
+      @media (min-width: 80rem) {
+        grid-template-columns: repeat(auto-fill, minmax(28rem, 1fr));
+      }
     }
+  }
+
+  ::view-transition-group(*) {
+    animation-duration: 300ms;
+    animation-timing-function: ease;
   }
 </style>
