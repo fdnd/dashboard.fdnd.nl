@@ -26,8 +26,9 @@
       <tr>
         <th>#</th>
         <th>Member</th>
-        <th>Login</th>
-        <th>Total commits</th>
+        <th>Commits</th>
+        <th>PR's</th>
+        <th>Issues</th>
       </tr>
     </thead>
     <tbody>
@@ -45,10 +46,88 @@
             {/if}
             {member.login}
           </td>
-          <td>{member.login}</td>
-          <td>{member.activityCount ?? 0}</td>
+          <td>{member.commits ?? member.activityCount ?? 0}</td>
+          <td>{member.pullRequests ?? 0}</td>
+          <td>{member.issues ?? 0}</td>
         </tr>
       {/each}
     </tbody>
   </table>
 {/if}
+
+<style>
+  table {
+    width: fit-content;
+    max-width: var(--max-width);
+    border-collapse: collapse;
+    margin: 1.5rem 0 3rem;
+    font-size: .9rem;
+    background: #fff;
+    border-radius: var(--small-radius);
+    overflow: hidden;
+    border: 1px solid currentColor;
+  }
+
+  thead {
+    background-color: var(--accent-color-2);
+  }
+
+  thead th {
+    padding: .5rem .75rem;
+    text-align: left;
+    border-bottom: 1px solid currentColor;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: .5rem .75rem;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:nth-child(even) {
+    background-color: #f7f7f7;
+  }
+
+  tbody tr:hover {
+    background-color: var(--grey);
+  }
+
+  /* index column */
+  td:first-child {
+    width: 2.5rem;
+    color: #666;
+  }
+
+  /* member cell with avatar */
+  td:nth-child(2) {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  td img {
+    border-radius: 999px;
+    border: 1px solid currentColor;
+  }
+
+  /* numbers right-aligned */
+  td:nth-child(4),
+  td:nth-child(5),
+  td:nth-child(6) {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* small-screen horizontal scroll if needed */
+  @media (max-width: 40rem) {
+    table {
+      display: block;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+</style>

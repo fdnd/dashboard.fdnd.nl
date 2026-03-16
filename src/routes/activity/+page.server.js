@@ -8,7 +8,7 @@ export async function load() {
     const { members, since } = await fetchMemberActivity({
       org,
       token: GITHUB_TOKEN,
-      sinceDays: 30
+      sinceDays: 30 // "last month" as rolling 30 days
     })
 
     return {
