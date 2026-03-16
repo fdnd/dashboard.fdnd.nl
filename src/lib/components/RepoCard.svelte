@@ -8,6 +8,31 @@
   const hasMeta = $derived(
     !!repo.metadata && Object.keys(repo.metadata).length > 0
   )
+
+  const SPRINTS = {
+    8: { month: 3, day: 2, slug:'server-side-rendering-server-side-website', name:'Server-Side Website' },
+    9: { month: 3, day: 16, slug:'the-web-is-for-everyone-interactive-functionality', name:'The Web is for Everyone' },
+    10: { month: 4, day: 13, slug:'user-experience-enhanced-website', name:'User Experience' },
+    11: { month: 5, day: 11, slug:'pleasurable-ui', name:'Pleasurable UI' }
+  }
+
+  function isReleased(sprintNumber) {
+    const YEAR = 2026
+    const now = new Date()
+
+    const config = SPRINTS[sprintNumber]
+    const date = new Date(YEAR, config.month - 1, config.day)
+    return now.getTime() >= date.getTime()
+  }
+
+  function getSprintUrl(member, sprintNumber) {
+    const config = SPRINTS[sprintNumber]
+    return `https://github.com/${member.github}/${config.slug}`
+  }
+
+  function getSprintName(sprintNumber) {
+    return SPRINTS[sprintNumber].name
+  }
 </script>
 
 <article
@@ -81,7 +106,42 @@
 
     <div class="activity">
       <div>
-        <img src="/activity.webp" alt="{repo.name} activity" />
+        {#if repo.metadata?.team && repo.metadata.team.length}
+          <table>
+            <thead>
+              <tr>
+                <th></th>
+                <th>Sprint 8</th>
+                <th>Sprint 9</th>
+                <th>Sprint 10</th>
+                <th>Sprint 11</th>
+              </tr>
+            </thead>
+            <tbody>
+            {#each repo.metadata.team as member}
+              <tr>
+                <td>{member.name}</td>
+
+                {#each [8, 9, 10, 11] as sprint}
+                  <td>
+                    {#if isReleased(sprint)}
+                      <a
+                        href={getSprintUrl(member, sprint)}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {getSprintName(sprint)}
+                      </a>
+                    {:else}
+                      {getSprintName(sprint)}
+                    {/if}
+                  </td>
+                {/each}
+              </tr>
+            {/each}
+          </tbody>
+          </table>
+        {/if}
 
         {#if !browser}
           <a class="collapse" href="#all-projects">Hide activity</a>
@@ -125,6 +185,7 @@
            - No JS: href="#repo.name" navigates and :target expands via CSS
            - JS: onclick prevents navigation and just calls onToggle()
       -->
+      {#if repo.metadata?.team && repo.metadata.team.length}
       <a
         href="#{repo.name}"
         onclick={(e) => {
@@ -132,8 +193,9 @@
           onToggle()
         }}
       >
-        {expanded ? 'Hide activity' : 'Show activity'}
+        {expanded ? 'hide year 1 team' : 'show year 1 team'}
       </a>
+      {/if}
 
       <ul>
         <li>
@@ -180,7 +242,7 @@
     display:flex;
     padding:1rem;
     min-height:100%;
-    background:#eee;
+    background:#fff;
     margin:0 .5rem;
     font-size: .9rem;
 
@@ -282,10 +344,10 @@
           gap:1rem;
           flex-direction: column;
           align-items:center;
+          
 
           div {
             display: none;
-            padding:0;
             flex-direction:column;
 
             img {
@@ -381,7 +443,7 @@
       :modal {
         display:grid;
         place-self: center;
-        border-radius:1rem;
+        border-radius:var(--small-radius);
         z-index:100;
         border-width:1px; 
 
