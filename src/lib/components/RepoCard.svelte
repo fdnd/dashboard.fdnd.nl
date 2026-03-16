@@ -1,6 +1,7 @@
 <script>
   import ExternalLink from '$lib/components/icons/ExternalLink.svelte'
   import View from '$lib/components/icons/View.svelte'
+  import Hide from '$lib/components/icons/Hide.svelte';
   import { browser } from '$app/environment'
 
   const { repo, status, expanded = false, onToggle } = $props()
@@ -70,7 +71,7 @@
                 alt={member.login}
                 class="avatar"
               />
-              <span>{member.login}</span>
+              <a href="https://github.com/{member.login}" target="_blank" rel="noreferrer">{member.login}</a>
             </li>
           {/each}
         </ul>
@@ -120,7 +121,9 @@
             <tbody>
             {#each repo.metadata.team as member}
               <tr>
-                <td>{member.name}</td>
+                <td>
+                  <a href="https://github.com/{member.github}" target="_blank" rel="noreferrer">{member.name} @{member.github}</a>
+                </td>
 
                 {#each [8, 9, 10, 11] as sprint}
                   <td>
@@ -193,19 +196,24 @@
           onToggle()
         }}
       >
-        {expanded ? 'hide year 1 team' : 'show year 1 team'}
+        year 1 team
+        {#if expanded}
+          <Hide size={12} />
+        {:else}
+          <View size={12} />
+        {/if}
       </a>
       {/if}
 
       <ul>
         <li>
           <a href={`/${repo.name}`}>
-            repository details<View size={12} />
+            details<View size={12} />
           </a>
         </li>
         <li>
           <a href={`https://github.com/fdnd-agency/${repo.name}`}>
-            show on GitHub<ExternalLink size={12} />
+            github repo<ExternalLink size={12} />
           </a>
         </li>
       </ul>
