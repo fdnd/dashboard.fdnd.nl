@@ -32,6 +32,8 @@
   }
 
   function getSprintName(sprintNumber) {
+    console.log(sprintNumber);
+    
     return SPRINTS[sprintNumber].name
   }
 </script>
@@ -47,7 +49,7 @@
 
       <ul>
         {#each repo.metadata?.years ?? [] as year}
-          <li><span>🎓 year {year}</span></li>
+          <li><span>year {year}</span></li>
         {/each}
       </ul>
     </div>
@@ -60,7 +62,7 @@
   <div class="details">
     {#if repo.team?.members?.length}
       <div>
-        <h4>Team</h4>
+        <h4>Team year 2</h4>
         <ul>
           {#each repo.team.members as member (member.login)}
             <li>
@@ -111,18 +113,17 @@
           <table>
             <thead>
               <tr>
-                <th></th>
-                <th>Sprint 8</th>
-                <th>Sprint 9</th>
-                <th>Sprint 10</th>
-                <th>Sprint 11</th>
+                <th>Team year 1</th>
+                {#each [8, 9, 10, 11] as sprint}
+                  <th>Sprint {sprint}: {getSprintName(sprint)}</th>
+                {/each}
               </tr>
             </thead>
             <tbody>
             {#each repo.metadata.team as member}
               <tr>
                 <td>
-                  <a href="https://github.com/{member.github}" target="_blank" rel="noreferrer">{member.name} @{member.github}</a>
+                  <a href="https://github.com/{member.github}" target="_blank" rel="noreferrer">{member.name}</a>
                 </td>
 
                 {#each [8, 9, 10, 11] as sprint}
@@ -133,10 +134,10 @@
                         target="_blank"
                         rel="noreferrer"
                       >
-                        {getSprintName(sprint)}
+                        {getSprintName(sprint)} @{member.github}
                       </a>
                     {:else}
-                      {getSprintName(sprint)}
+                      {getSprintName(sprint)} not started yet
                     {/if}
                   </td>
                 {/each}
@@ -196,7 +197,7 @@
           onToggle()
         }}
       >
-        year 1 team
+        team year 1
         {#if expanded}
           <Hide size={12} />
         {:else}
@@ -352,7 +353,8 @@
           gap:1rem;
           flex-direction: column;
           align-items:center;
-          
+          overflow-x:auto;
+          padding-bottom:1rem;
 
           div {
             display: none;
