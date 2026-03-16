@@ -62,10 +62,10 @@
     border-collapse: collapse;
     margin: 1.5rem 0 3rem;
     font-size: .9rem;
-    background: #fff;
+    background: --blue;
     border-radius: var(--small-radius);
     overflow: hidden;
-    border: 1px solid currentColor;
+    border: 1px solid var(--blue);
   }
 
   thead {
@@ -88,6 +88,9 @@
   tbody tr:last-child td {
     border-bottom: none;
   }
+  tbody tr:nth-child(odd) {
+    background-color: #fff;
+  }
 
   tbody tr:nth-child(even) {
     background-color: #f7f7f7;
@@ -100,7 +103,6 @@
   /* index column */
   td:first-child {
     width: 2.5rem;
-    color: #666;
   }
 
   /* member cell with avatar */
