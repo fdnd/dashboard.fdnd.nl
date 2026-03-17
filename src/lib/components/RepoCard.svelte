@@ -32,8 +32,6 @@
   }
 
   function getSprintName(sprintNumber) {
-    console.log(sprintNumber);
-    
     return SPRINTS[sprintNumber].name
   }
 </script>
@@ -115,7 +113,7 @@
               <tr>
                 <th>Team year 1</th>
                 {#each [8, 9, 10, 11] as sprint}
-                  <th>Sprint {sprint}: {getSprintName(sprint)}</th>
+                  <th>Sprint {sprint}</th>
                 {/each}
               </tr>
             </thead>
