@@ -1,7 +1,8 @@
 <script>
   import ExternalLink from '$lib/components/icons/ExternalLink.svelte'
   import View from '$lib/components/icons/View.svelte'
-  import Hide from '$lib/components/icons/Hide.svelte';
+  import Hide from '$lib/components/icons/Hide.svelte'
+  import Bulb from './icons/Bulb.svelte'
   import { browser } from '$app/environment'
 
   const { repo, status, expanded = false, onToggle } = $props()
@@ -107,6 +108,11 @@
 
     <div class="activity">
       <div>
+        <a href="https://github.com/fdnd-agency/{repo.name}/wiki/Design-Challenge" target="_blank" rel="noreferrer">
+          design challenge
+          <Bulb />
+        </a>
+
         {#if repo.metadata?.team && repo.metadata.team.length}
           <table>
             <thead>
@@ -183,36 +189,39 @@
         </button>
       {/if}
 
-      <!-- Progressive enhancement:
-           - No JS: href="#repo.name" navigates and :target expands via CSS
-           - JS: onclick prevents navigation and just calls onToggle()
-      -->
-      {#if repo.metadata?.team && repo.metadata.team.length}
-      <a
-        href="#{repo.name}"
-        onclick={(e) => {
-          e.preventDefault()
-          onToggle()
-        }}
-      >
-        team year 1
-        {#if expanded}
-          <Hide size={12} />
-        {:else}
-          <View size={12} />
-        {/if}
-      </a>
-      {/if}
-
       <ul>
         <li>
+          <!-- Progressive enhancement:
+            - No JS: href="#repo.name" navigates and :target expands via CSS
+            - JS: onclick prevents navigation and just calls onToggle()
+          -->
+          {#if repo.metadata?.team && repo.metadata.team.length}
+          <a
+            href="#{repo.name}"
+            onclick={(e) => {
+              e.preventDefault()
+              onToggle()
+            }}
+          >
+            team year 1
+            {#if expanded}
+              <Hide size={12} />
+            {:else}
+              <View size={12} />
+            {/if}
+          </a>
+          {/if}
+        </li>
+        <li>
           <a href={`/${repo.name}`}>
-            details<View size={12} />
+            activity
+            <View size={12} />
           </a>
         </li>
         <li>
-          <a href={`https://github.com/fdnd-agency/${repo.name}`}>
-            github repo<ExternalLink size={12} />
+          <a href={`https://github.com/fdnd-agency/${repo.name}`} target="_blank" rel="noreferrer">
+            github repo
+            <ExternalLink size={12} />
           </a>
         </li>
       </ul>
@@ -344,7 +353,7 @@
         }
 
         &.activity {
-          margin: 1rem -1rem 0;
+          margin: 0 -1rem;
           grid-column: 1 / -1;
           position: relative;
           display:flex;
@@ -353,10 +362,19 @@
           align-items:center;
           overflow-x:auto;
           padding-bottom:1rem;
+          position: relative;
+          padding-top:1rem;
 
           div {
             display: none;
             flex-direction:column;
+
+            > a {
+              padding:0;
+              display:flex;
+              align-items: center;
+              gap:.25rem;
+            }
 
             img {
               max-width: 100%;
@@ -372,10 +390,6 @@
 
         h4{
           margin-bottom: .5rem;
-        }
-
-        span {
-          white-space: nowrap;
         }
 
         ul {
@@ -445,6 +459,7 @@
 
         @media (min-width: 60rem) {
           flex-direction:row;
+          gap: 1rem;
         }
       }
 
