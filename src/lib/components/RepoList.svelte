@@ -65,19 +65,15 @@
       expandedRepo = expandedRepo === repoName ? null : repoName
     }
 
-    const afterUpdate = () => {
-      // Keep URL hash in sync with state
-      if (expandedRepo === repoName) {
-        // Expanded → set hash for deep-linking
-        history.pushState(null, '', `#${repoName}`)
-      } else {
-        // Collapsed → clear hash (keep path + query)
-        history.pushState(
-          null,
-          '',
-          window.location.pathname + window.location.search
-        )
-      }
+    const syncHash = () => {
+      if (!browser) return
+
+      const base = window.location.pathname + window.location.search
+      const href =
+        expandedRepo === repoName ? `${base}#${repoName}` : base
+
+      // Overwrite current history entry instead of adding a new one
+      history.replaceState(history.state, '', href)
     }
 
     if (document.startViewTransition) {
@@ -93,7 +89,7 @@
           window.scrollTo({ top, behavior: 'smooth' })
         }
 
-        afterUpdate()
+        syncHash()
       })
     } else {
       update()
@@ -107,7 +103,7 @@
         window.scrollTo({ top, behavior: 'smooth' })
       }
 
-      afterUpdate()
+      syncHash()
     }
   }
 </script>
