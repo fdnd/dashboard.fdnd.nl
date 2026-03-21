@@ -127,7 +127,7 @@
             {#each repo.project_boards as projectboard}
               <li>
                 <a href={projectboard.url} target="_blank" rel="noreferrer">
-                  Project board: {projectboard.title}
+                  {projectboard.title}
                 </a>
               </li>
             {/each}
@@ -135,7 +135,7 @@
         </div>
 
         {#if repo.epics?.length > 0}
-        <div>
+        <div class="epics">
           <h4>Epics</h4>
 
           <ul>
@@ -374,6 +374,14 @@
                 padding:0;
                 margin-left:0;
                 align-self:stretch;
+              }
+
+              &.epics {
+                grid-column: 1 / -1;
+
+                @media (min-width:30rem) {
+                  grid-column:auto;
+                }
               }
 
               &.team-year-1 {
