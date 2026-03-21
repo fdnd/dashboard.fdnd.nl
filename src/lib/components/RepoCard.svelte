@@ -1,8 +1,7 @@
 <script>
   import ExternalLink from '$lib/components/icons/ExternalLink.svelte'
   import View from '$lib/components/icons/View.svelte'
-  import Hide from '$lib/components/icons/Hide.svelte'
-  import Bulb from './icons/Bulb.svelte'
+  import Arrow from '$lib/components/icons/Arrow.svelte'
   import { browser } from '$app/environment'
 
   const { repo, status, expanded = false, onToggle } = $props()
@@ -197,12 +196,7 @@
     <footer>
 
       <ul>
-        <li>
-          <!-- Progressive enhancement:
-            - No JS: href="#repo.name" navigates and :target expands via CSS
-            - JS: onclick prevents navigation and just calls onToggle()
-          -->
-          
+        <li>          
           <a
             href="#{repo.name}"
             onclick={(e) => {
@@ -210,12 +204,13 @@
               onToggle()
             }}
           >
-            Details
             {#if expanded}
-              <Hide size={12} />
+              Hide details
             {:else}
-              <View size={12} />
+              Show details
             {/if}
+            
+            <Arrow { expanded } />
           </a>
         </li>
         <li>
@@ -227,7 +222,7 @@
         <li>
           <a href={`https://github.com/fdnd-agency/${repo.name}`} target="_blank" rel="noreferrer">
             GitHub repo
-            <ExternalLink size={12} />
+            <ExternalLink size={16} />
           </a>
         </li>
       </ul>
@@ -362,7 +357,6 @@
               display:flex;
               align-items: center;
               gap:.25rem;
-              /* white-space: nowrap; */
             }
 
             div {
