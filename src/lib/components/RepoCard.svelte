@@ -58,7 +58,7 @@
     {/if}
   </header>
 
-  <div class="details">
+  <div class="body">
     {#if repo.team?.members?.length}
       <div>
         <h4>Team year 2</h4>
@@ -106,14 +106,49 @@
       </div>
     {/if}
 
-    <div class="activity">
-      <div>
-        <a href="https://github.com/fdnd-agency/{repo.name}/wiki/Design-Challenge" target="_blank" rel="noreferrer">
-          design challenge
-          <Bulb />
-        </a>
+    <div class="details">
+        <div>
+          <h4>Scope</h4>
+
+          <ul>
+            <li>
+              <a href="https://github.com/fdnd-agency/{repo.name}/wiki/Design-Challenge" target="_blank" rel="noreferrer">
+                Design challenge
+              </a>
+            </li>
+          </ul>
+
+        </div>
+        
+        <div>
+          <h4>Project board(s)</h4>
+
+          <ul>
+            {#each repo.project_boards as projectboard}
+              <li>
+                <a href={projectboard.url} target="_blank" rel="noreferrer">
+                  Project board: {projectboard.title}
+                </a>
+              </li>
+            {/each}
+            </ul>
+        </div>
+
+        {#if repo.epics?.length > 0}
+        <div>
+          <h4>Epics</h4>
+
+          <ul>
+            {#each repo.epics as epic}
+              <li><a href="{epic.url}">{epic.title}</a></li>
+            {/each}
+          </ul>
+        </div>
+          
+        {/if}
 
         {#if repo.metadata?.team && repo.metadata.team.length}
+        <div class="team-year-1">
           <table>
             <thead>
               <tr>
@@ -124,70 +159,42 @@
               </tr>
             </thead>
             <tbody>
-            {#each repo.metadata.team as member}
-              <tr>
-                <td>
-                  <a href="https://github.com/{member.github}" target="_blank" rel="noreferrer">{member.name} @{member.github}</a>
-                </td>
-
-                {#each [8, 9, 10, 11] as sprint}
+              {#each repo.metadata.team as member}
+                <tr>
                   <td>
-                    {#if isReleased(sprint)}
-                      <a
-                        href={getSprintUrl(member, sprint)}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {getSprintName(sprint)} 
-                      </a>
-                    {:else}
-                      {getSprintName(sprint)}
-                    {/if}
+                    <a href="https://github.com/{member.github}" target="_blank" rel="noreferrer">{member.name} @{member.github}</a>
                   </td>
-                {/each}
-              </tr>
-            {/each}
-          </tbody>
+
+                  {#each [8, 9, 10, 11] as sprint}
+                    <td>
+                      {#if isReleased(sprint)}
+                        <a
+                          href={getSprintUrl(member, sprint)}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {getSprintName(sprint)} 
+                        </a>
+                      {:else}
+                        {getSprintName(sprint)}
+                      {/if}
+                    </td>
+                  {/each}
+                </tr>
+              {/each}
+            </tbody>
           </table>
+        </div>
         {/if}
 
         {#if !browser}
-          <a class="collapse" href="#all-projects">Hide activity</a>
+          <a class="collapse" href="#all-projects">Hide details</a>
         {/if}
       </div>
-    </div>
   </div>
 
   {#if hasMeta}
     <footer>
-      {#if repo.epics?.length > 0}
-        <button command="show-modal" commandfor="backlog-{repo.name}">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="icon icon-tabler icons-tabler-outline icon-tabler-checkup-list"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path
-              d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"
-            />
-            <path
-              d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2"
-            />
-            <path d="M9 14h.01" />
-            <path d="M9 17h.01" />
-            <path d="M12 16l1 1l3 -3" />
-          </svg>
-          <span>epics</span>
-        </button>
-      {/if}
 
       <ul>
         <li>
@@ -195,7 +202,7 @@
             - No JS: href="#repo.name" navigates and :target expands via CSS
             - JS: onclick prevents navigation and just calls onToggle()
           -->
-          {#if repo.metadata?.team && repo.metadata.team.length}
+          
           <a
             href="#{repo.name}"
             onclick={(e) => {
@@ -203,45 +210,27 @@
               onToggle()
             }}
           >
-            team year 1
+            Details
             {#if expanded}
               <Hide size={12} />
             {:else}
               <View size={12} />
             {/if}
           </a>
-          {/if}
         </li>
         <li>
           <a href={`/${repo.name}`}>
-            activity
+            Activity
             <View size={12} />
           </a>
         </li>
         <li>
           <a href={`https://github.com/fdnd-agency/${repo.name}`} target="_blank" rel="noreferrer">
-            github repo
+            GitHub repo
             <ExternalLink size={12} />
           </a>
         </li>
       </ul>
-
-      {#if repo.epics?.length > 0}
-        <dialog id="backlog-{repo.name}">
-          <h4>
-            <em>{hasMeta ? repo.metadata.title : repo.name}</em>
-            <span>Epics</span>
-          </h4>
-          <ul>
-            {#each repo.epics as epic}
-              <li><a href="{epic.url}">{epic.title}</a></li>
-            {/each}
-          </ul>
-          <button commandfor="backlog-{repo.name}" command="close">
-            close
-          </button>
-        </dialog>
-      {/if}
     </footer>
   {/if}
 </article>
@@ -327,12 +316,12 @@
       --_fill: #e3e3e3;
     }
 
-    .details {
+    .body {
       display:grid;
       grid-template-columns: 1fr 1fr 1fr;
       gap:1rem;
       align-items: start;
-      margin-bottom: 0;
+      margin-bottom: 1rem;
       margin-top:1rem;
 
       div {
@@ -352,7 +341,7 @@
           margin:0;
         }
 
-        &.activity {
+        &.details {
           margin: 0 -1rem;
           grid-column: 1 / -1;
           position: relative;
@@ -360,32 +349,55 @@
           gap:1rem;
           flex-direction: column;
           align-items:center;
-          overflow-x:auto;
-          padding-bottom:1rem;
           position: relative;
           padding-top:1rem;
+          display: none;
+          grid-template-columns: subgrid;
+          gap: 1rem;
+          align-items: start;
+            
 
-          div {
-            display: none;
-            flex-direction:column;
-
-            > a {
+            a {
               padding:0;
               display:flex;
               align-items: center;
               gap:.25rem;
+              /* white-space: nowrap; */
             }
 
-            img {
-              max-width: 100%;
-              border-radius: .5rem;
+            div {
+              border-left:1px solid #ccc;
+              margin: 0 calc(-1rem - .5px);
+
+              &:first-child {
+                border-left:none;
+                padding:0;
+                margin-left:0;
+                align-self:stretch;
+              }
+
+              &.team-year-1 {
+                border:none;
+                margin:0;
+                grid-column: 1 / -1;
+                overflow-x: auto;
+                margin: 0 -1rem;
+                padding: 0 1rem;
+                width: calc(100% + 2rem);
+              }
+
+              a {
+                margin-left:0rem;
+              }
             }
+
+
 
             .collapse {
               align-self:end;
               margin-top: .5rem;
             }
-          }
+          
         }
 
         h4{
@@ -421,24 +433,6 @@
       }
     }
 
-    button {
-      --_background: #e3e3e3;
-      align-self:start;
-      padding:.25rem .5rem;
-      border: 1px solid var(--blue);
-      background:var(--_background);
-      display:flex;
-      gap:.25rem;
-      align-self:center;
-      align-items:center;
-      cursor: pointer;
-
-      &:hover,
-      &:focus-visible {
-        --_background: var(--green);
-      }
-    }
-
     footer {
       background-color: transparent;
       margin:auto -1rem -1rem;
@@ -463,41 +457,6 @@
         }
       }
 
-      :modal {
-        display:grid;
-        place-self: center;
-        border-radius:var(--small-radius);
-        z-index:100;
-        border-width:1px; 
-
-        height: auto;
-        max-height: max-content;
-        min-height: unset;
-
-        h4 {
-          margin-bottom: .5rem;
-          display:flex;
-          flex-direction:column;
-
-          em {
-            font-style: normal;
-            font-size: 1.25rem;
-          }
-        }
-
-        ul {
-          flex-direction: column;
-          margin-bottom: 1rem;
-          margin-left: 0;
-        }
-
-        button {
-          justify-self: end;
-        }
-      }
-
-
-
       a {
         text-decoration: none;
         display: flex;
@@ -518,7 +477,7 @@
      JS: .expanded (Svelte state) expands the card
   */
 
-  /* No JS: :target → expanded layout + show activity content */
+  /* No JS: :target → expanded layout + show details content */
   :global(html:not(.js) article:target) {
     @media (min-width: 60rem) {
       grid-column: span 2;
@@ -528,12 +487,8 @@
     }
   }
 
-  :global(html:not(.js) article:target div.details > div.activity > div) {
-    display:flex;
-  }
-
-  /* JS: .expanded → same behaviour; :target is ignored in JS mode */
-  :global(html.js article.expanded div.details > div.activity > div) {
-    display:flex;
+  :global(html:not(.js) article:target div.details),
+  :global(html.js article.expanded div.details) {
+    display:grid;
   }
 </style>

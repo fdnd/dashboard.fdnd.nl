@@ -32,6 +32,17 @@ export async function fetchDashboardData(org, token) {
                 name
                 nameWithOwner
                 url
+
+                projectsV2(first: 10) {
+                  nodes {
+                    id
+                    title
+                    number
+                    url
+                    closed
+                  }
+                }
+
                 defaultBranchRef {
                   name
                 }
@@ -65,8 +76,8 @@ export async function fetchDashboardData(org, token) {
     org,
     teamCount: 50,
     memberCount: 50,
-    repoCount: 60,  
-    issueCount: 100 
+    repoCount: 60,
+    issueCount: 100
   }
 
   const { organization } = await client(query, variables)
@@ -115,19 +126,29 @@ export async function fetchDashboardData(org, token) {
           : null
       }))
 
+      const projectBoards = repo.projectsV2?.nodes
+      ?.filter((p) => !p.closed)       // only open project boards
+      .map((p) => ({
+        id: p.id,
+        title: p.title,
+        number: p.number,
+        url: p.url
+      })) ?? []
+
       repos.push({
-        name: repo.name,                  
+        name: repo.name,
         full_name: repo.nameWithOwner,
         html_url: repo.url,
         default_branch: repo.defaultBranchRef?.name ?? 'main',
-        metadata,                         
+        metadata,
         team: {
           name: team.name,
           slug: team.slug,
-          members                         
+          members
         },
-        epics,                           
-        epic_summary: epics.length
+        epics,
+        epic_summary: epics.length,
+        project_boards: projectBoards
       })
     }
   }
