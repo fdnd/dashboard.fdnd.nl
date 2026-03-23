@@ -350,9 +350,16 @@
 
         &:first-child {
           border-left:none;
-          margin:0;
+          margin:0 0 1rem;
           padding-left:0;
           align-self:stretch;
+
+          grid-column: 1 / -1;
+
+          @media (min-width:40rem) {
+            grid-column:auto;
+            margin-bottom:0;
+          }
         }
 
         &:last-child {
@@ -374,7 +381,7 @@
           grid-template-columns: subgrid;
           gap: 1rem;
           align-items: start;
-            
+          overflow:hidden;
 
             a {
               padding:0;
@@ -397,7 +404,7 @@
               &.epics {
                 grid-column: 1 / -1;
 
-                @media (min-width:30rem) {
+                @media (min-width:40rem) {
                   grid-column:auto;
                 }
               }
@@ -406,10 +413,21 @@
                 border:none;
                 margin:0;
                 grid-column: 1 / -1;
-                overflow-x: auto;
+                overflow-x: hidden;
                 margin: 0 -1rem;
                 padding: 0 1rem;
                 width: calc(100% + 2rem);
+
+                @media (max-width:40rem) {
+                  table {
+                    display: block;
+                    overflow-x: auto;
+                    -webkit-overflow-scrolling: touch;
+                    scrollbar-color: var(--blue) var(--green);
+                    scrollbar-width: thin;
+                  }
+                }
+                
               }
 
               a {
@@ -417,17 +435,15 @@
               }
             }
 
-
-
             .collapse {
               align-self:end;
               margin-top: .5rem;
             }
-          
         }
 
-        h4{
+        h4 {
           margin-bottom: .5rem;
+          /* white-space:nowrap; */
         }
 
         ul {

@@ -43,9 +43,6 @@
 
 <style>
   p {
-    --_position-right: var(--padding-side);
-    position:absolute;
-    right:1rem;
     margin-top: .25rem;
     display:flex;
     align-items:center;
@@ -55,8 +52,8 @@
       font-size: .9rem;
     }
 
-    @media (min-width:30rem) {
-      --_position-right: calc(var(--padding-side) * 2);
+    @media (min-width:40rem) {
+      position:absolute;
       right:2rem;
     }
   }
