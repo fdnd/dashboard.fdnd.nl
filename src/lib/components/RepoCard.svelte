@@ -231,6 +231,16 @@
 </article>
 
 <style>
+  @keyframes repo-card-reveal {
+    from {
+      scale:.75;
+    }
+
+    to {
+      scale:1;
+    }
+  }
+
   article {
     --_fill: var(--accent-color-2);
     display:flex;
@@ -247,11 +257,25 @@
     font-size: .9rem;
     container-type: inline-size;
 
+
+    @supports (animation-timeline: view()) {
+      animation: repo-card-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 30%;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+      scale: 1;
+    }
+
     @media (min-width:40rem) {
       margin:0;
     }
 
     &.expanded {
+      --_fill: var(--accent-color-1);
+
       @media (min-width: 60rem) {
         grid-column: span 2;
         grid-row: span 2;
@@ -515,5 +539,9 @@
   :global(html:not(.js) article:target div.details),
   :global(html.js article.expanded div.details) {
     display:grid;
+  }
+
+  :global(html.scroll-animation-disabled article) {
+    animation: none;
   }
 </style>
