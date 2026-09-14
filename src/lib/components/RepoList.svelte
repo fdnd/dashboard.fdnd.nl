@@ -3,108 +3,129 @@
   import YearFilter from '$lib/components/YearFilter.svelte'
   import { browser } from '$app/environment'
 
-  let { title, id, repos = [], status } = $props()
+  let { title, id, repos = [] } = $props()
 
   let selectedYear = $state('all')
   let expandedRepo = $state(null)
 
+  const sortedRepos = $derived(
+    [...repos].sort((a, b) => {
+      const titleA = a.metadata?.title ?? a.name
+      const titleB = b.metadata?.title ?? b.name
+
+      return titleA.localeCompare(titleB, undefined, { sensitivity: 'base' })
+    })
+  )
+
   const filteredRepos = $derived(
     selectedYear === 'all'
-      ? repos
-      : repos.filter((repo) =>
+      ? sortedRepos
+      : sortedRepos.filter((repo) =>
           repo.metadata?.years?.includes(Number(selectedYear))
         )
   )
 
-  // Mark JS-enabled for CSS (so :target can be disabled when JS runs)
   if (browser) {
     document.documentElement.classList.add('js')
   }
 
   $effect(() => {
-    if (!browser) return
-
-    const updateExpanded = () => {
-      const hash = window.location.hash.slice(1)
-
-      if (hash && repos.find((repo) => repo.name === hash)) {
-        const update = () => {
-          expandedRepo = hash
-        }
-
-        if (document.startViewTransition) {
-          document.startViewTransition(update)
-        } else {
-          update()
-        }
-
-        const el = document.getElementById(hash)
-        if (el) {
-          el.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          })
-        }
-      } else {
-        // No valid hash → collapse all cards
-        expandedRepo = null
-      }
-    }
-
     // Handle initial hash on page load
-    updateExpanded()
+    expandTargetFromHash()
 
     // Handle real hashchange events (e.g. manual hash edits)
-    window.addEventListener('hashchange', updateExpanded)
+    window.addEventListener('hashchange', expandTargetFromHash)
 
-    return () => window.removeEventListener('hashchange', updateExpanded)
+    return () => window.removeEventListener('hashchange', expandTargetFromHash)
   })
 
-  function toggle(repoName) {
-    const update = () => {
-      expandedRepo = expandedRepo === repoName ? null : repoName
+
+  // Expands the repository referenced by the current URL hash.
+  function expandTargetFromHash() {
+    const hash = window.location.hash.slice(1)
+
+    if (hash && repos.find((repo) => repo.name === hash)) {
+        runViewTransition(
+          () => {
+            expandedRepo = hash
+          },
+          'expand'
+        )
+
+      const el = document.getElementById(hash)
+      if (el) {
+        el.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        })
+      }
+    } else {
+      // No valid hash → collapse all cards
+      expandedRepo = null
     }
+  }
 
-    const syncHash = () => {
-      if (!browser) return
+  // Handles expanding, scrolling to, and linking the targeted repository
+  function handleTargetedRepo(repoName) {
+    const direction = expandedRepo === repoName ? 'collapse' : 'expand'
+    const transition = runViewTransition(
+      () => toggleExpansion(repoName),
+      direction
+    )
 
-      const base = window.location.pathname + window.location.search
-      const href =
-        expandedRepo === repoName ? `${base}#${repoName}` : base
-
-      // Overwrite current history entry instead of adding a new one
-      history.replaceState(history.state, '', href)
-    }
-
-    if (document.startViewTransition) {
-      const transition = document.startViewTransition(update)
-
-      transition?.finished.then(() => {
-        const el = document.getElementById(repoName)
-        if (el) {
-          const offset = 6 * 16
-          const top =
-            el.getBoundingClientRect().top + window.scrollY - offset
-
-          window.scrollTo({ top, behavior: 'smooth' })
-        }
-
-        syncHash()
+    if (transition) {
+      transition.finished.then(() => {
+        scrollToTarget(repoName)
+        syncTargetHash(repoName)
       })
     } else {
-      update()
-
-      const el = document.getElementById(repoName)
-      if (el) {
-        const offset = 6 * 16
-        const top =
-          el.getBoundingClientRect().top + window.scrollY - offset
-
-        window.scrollTo({ top, behavior: 'smooth' })
-      }
-
-      syncHash()
+      scrollToTarget(repoName)
+      syncTargetHash(repoName)
     }
+
+  }
+
+  // Keeps the URL hash in sync with the targeted repository.
+  function syncTargetHash(repoName) {
+    if (!browser) return
+
+    const base = window.location.pathname + window.location.search
+    const href = expandedRepo === repoName ? `${base}#${repoName}` : base
+
+    // Overwrite current history entry instead of adding a new one
+    history.replaceState(history.state, '', href)
+  }
+
+  // Scrolls the page to the targeted repository card.
+  function scrollToTarget(repoName) {
+    const el = document.getElementById(repoName)
+    if (!el) return
+
+    const offset = 6 * 16
+    const top = el.getBoundingClientRect().top + window.scrollY - offset
+
+    window.scrollTo({ top, behavior: 'smooth' })
+  }
+
+  // Expands a repository or collapses it when it is already open.
+  function toggleExpansion(repoName) {
+    expandedRepo = expandedRepo === repoName ? null : repoName
+  }
+
+  // Runs a state update with a view transition when supported.
+  function runViewTransition(update, direction) {
+    document.documentElement.dataset.transitionDirection = direction
+
+    const prefersReducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches
+
+    if (document.startViewTransition && !prefersReducedMotion) {
+      return document.startViewTransition(update)
+    }
+
+    update()
+    return null
   }
 </script>
 
@@ -119,9 +140,8 @@
     {#each filteredRepos as repo (repo.name)}
       <RepoCard
         {repo}
-        {status}
         expanded={expandedRepo === repo.name}
-        onToggle={() => toggle(repo.name)}
+        onToggle={() => handleTargetedRepo(repo.name)}
       />
     {/each}
   </div>
@@ -161,8 +181,13 @@
     }
   }
 
-  ::view-transition-group(*) {
+  :root[data-transition-direction='expand']::view-transition-group(*) {
     animation-duration: 300ms;
-    animation-timing-function: ease;
+    animation-timing-function: ease-out;
+  }
+
+  :root[data-transition-direction='collapse']::view-transition-group(*) {
+    animation-duration: 300ms;
+    animation-timing-function: ease-in;
   }
 </style>

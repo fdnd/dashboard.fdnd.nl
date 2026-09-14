@@ -23,3 +23,6 @@
 </main>
 
 <Footer />
+
+<style>
+</style>

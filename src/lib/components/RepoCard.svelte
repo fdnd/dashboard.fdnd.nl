@@ -4,7 +4,7 @@
   import Arrow from '$lib/components/icons/Arrow.svelte'
   import { browser } from '$app/environment'
 
-  const { repo, status, expanded = false, onToggle } = $props()
+  const { repo, expanded = false, onToggle } = $props()
 
   const hasMeta = $derived(
     !!repo.metadata && Object.keys(repo.metadata).length > 0
@@ -38,7 +38,7 @@
 
 <article
   id={repo.name}
-  class="{status} {expanded ? 'expanded' : ''}"
+  class:expanded
   style="view-transition-name: repo-{repo.name}"
 >
   <header>
@@ -79,21 +79,24 @@
     {/if}
 
     {#if hasMeta}
-      <div>
-        <h4>Live sites</h4>
-        <ul>
-          <li>
-            <a href={repo.metadata.main_link}>
-              <code>main</code><ExternalLink size={12} />
-            </a>
-          </li>
-          <li>
-            <a href={repo.metadata.dev_link}>
-              <code>dev</code><ExternalLink size={12} />
-            </a>
-          </li>
-        </ul>
-      </div>
+      
+      {#if repo.metadata.main_link !== '' || repo.metadata.dev_link !== ''}
+        <div>  
+          <h4>Live sites</h4>
+          <ul>
+            <li>
+              <a href={repo.metadata.main_link}>
+                <code>main</code><ExternalLink size={12} />
+              </a>
+            </li>
+            <li>
+              <a href={repo.metadata.dev_link}>
+                <code>dev</code><ExternalLink size={12} />
+              </a>
+            </li>
+          </ul>
+        </div>
+      {/if}
 
       <div>
         <h4>Tech stack</h4>
@@ -231,6 +234,16 @@
 </article>
 
 <style>
+  @keyframes repo-card-reveal {
+    from {
+      scale:.75;
+    }
+
+    to {
+      scale:1;
+    }
+  }
+
   article {
     --_fill: var(--accent-color-2);
     display:flex;
@@ -247,11 +260,25 @@
     font-size: .9rem;
     container-type: inline-size;
 
+
+    @supports (animation-timeline: view()) {
+      animation: repo-card-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 30%;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+      scale: 1;
+    }
+
     @media (min-width:40rem) {
       margin:0;
     }
 
     &.expanded {
+      --_fill: var(--accent-color-1);
+
       @media (min-width: 60rem) {
         grid-column: span 2;
         grid-row: span 2;
@@ -325,10 +352,6 @@
           margin: -.25rem;
         }
       }
-    }
-
-    &.inactive header {
-      --_fill: #e3e3e3;
     }
 
     .body {
@@ -516,4 +539,5 @@
   :global(html.js article.expanded div.details) {
     display:grid;
   }
+
 </style>
