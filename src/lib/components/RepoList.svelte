@@ -3,15 +3,24 @@
   import YearFilter from '$lib/components/YearFilter.svelte'
   import { browser } from '$app/environment'
 
-  let { title, id, repos = [], status } = $props()
+  let { title, id, repos = [] } = $props()
 
   let selectedYear = $state('all')
   let expandedRepo = $state(null)
 
+  const sortedRepos = $derived(
+    [...repos].sort((a, b) => {
+      const titleA = a.metadata?.title ?? a.name
+      const titleB = b.metadata?.title ?? b.name
+
+      return titleA.localeCompare(titleB, undefined, { sensitivity: 'base' })
+    })
+  )
+
   const filteredRepos = $derived(
     selectedYear === 'all'
-      ? repos
-      : repos.filter((repo) =>
+      ? sortedRepos
+      : sortedRepos.filter((repo) =>
           repo.metadata?.years?.includes(Number(selectedYear))
         )
   )
@@ -131,7 +140,6 @@
     {#each filteredRepos as repo (repo.name)}
       <RepoCard
         {repo}
-        {status}
         expanded={expandedRepo === repo.name}
         onToggle={() => handleTargetedRepo(repo.name)}
       />
@@ -143,19 +151,6 @@
   section {
     max-width: var(--max-width);
     margin: 0 -1rem 3rem;
-
-    transform: scale(var(--project-scale, 1));
-    rotate: calc(var(--project-scale, 1) - 1) * -5deg;
-    transform-origin: center top;
-
-    /* zoom animation step 6: identify the elements that should transition. */
-    &#active-projects {
-      view-transition-name: active-projects;
-    }
-
-    &#inactive-projects {
-      view-transition-name: inactive-projects;
-    }
 
     > header {
       margin: 0 1rem 1rem;

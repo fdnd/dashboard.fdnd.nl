@@ -111,6 +111,8 @@ export async function fetchDashboardData(org, token) {
         }
       }
 
+      if (metadata.status !== 'active') continue
+
       const issues = repo.issues?.nodes ?? []
       const epics = issues.map((issue) => ({
         number: issue.number,

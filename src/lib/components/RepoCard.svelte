@@ -4,7 +4,7 @@
   import Arrow from '$lib/components/icons/Arrow.svelte'
   import { browser } from '$app/environment'
 
-  const { repo, status, expanded = false, onToggle } = $props()
+  const { repo, expanded = false, onToggle } = $props()
 
   const hasMeta = $derived(
     !!repo.metadata && Object.keys(repo.metadata).length > 0
@@ -38,7 +38,7 @@
 
 <article
   id={repo.name}
-  class="{status} {expanded ? 'expanded' : ''}"
+  class:expanded
   style="view-transition-name: repo-{repo.name}"
 >
   <header>
@@ -79,21 +79,24 @@
     {/if}
 
     {#if hasMeta}
-      <div>
-        <h4>Live sites</h4>
-        <ul>
-          <li>
-            <a href={repo.metadata.main_link}>
-              <code>main</code><ExternalLink size={12} />
-            </a>
-          </li>
-          <li>
-            <a href={repo.metadata.dev_link}>
-              <code>dev</code><ExternalLink size={12} />
-            </a>
-          </li>
-        </ul>
-      </div>
+      
+      {#if repo.metadata.main_link !== '' || repo.metadata.dev_link !== ''}
+        <div>  
+          <h4>Live sites</h4>
+          <ul>
+            <li>
+              <a href={repo.metadata.main_link}>
+                <code>main</code><ExternalLink size={12} />
+              </a>
+            </li>
+            <li>
+              <a href={repo.metadata.dev_link}>
+                <code>dev</code><ExternalLink size={12} />
+              </a>
+            </li>
+          </ul>
+        </div>
+      {/if}
 
       <div>
         <h4>Tech stack</h4>
@@ -351,10 +354,6 @@
       }
     }
 
-    &.inactive header {
-      --_fill: #e3e3e3;
-    }
-
     .body {
       display:grid;
       grid-template-columns: 2fr 1fr 1fr;
@@ -541,7 +540,4 @@
     display:grid;
   }
 
-  :global(html.scroll-animation-disabled article) {
-    animation: none;
-  }
 </style>
