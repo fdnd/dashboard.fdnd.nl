@@ -65,9 +65,10 @@
             </button>
         </div>
 
-        <ul style="--total: 2;">
-            <li style="--i: 1;"><a href="/#active-projects"><span>Active projects</span> 🔥</a></li>
-            <li style="--i: 2;"><a href="https://github.com/fdnd-agency">
+        <ul style="--total: 3;">
+            <li style="--i: 1;"><a href="/#year-1-projects"><span>Year 1 projects</span></a></li>
+            <li style="--i: 2;"><a href="/#year-2-projects"><span>Year 2 projects</span></a></li>
+            <li style="--i: 3;"><a href="https://github.com/fdnd-agency">
                 <span>FDND Agency</span>
                 <Git />
             </a></li>
