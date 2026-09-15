@@ -1,11 +1,10 @@
 <script>
   import RepoCard from '$lib/components/RepoCard.svelte'
-  import YearFilter from '$lib/components/YearFilter.svelte'
   import { browser } from '$app/environment'
+  import { replaceState } from '$app/navigation'
 
   let { title, id, repos = [] } = $props()
 
-  let selectedYear = $state('all')
   let expandedRepo = $state(null)
 
   const sortedRepos = $derived(
@@ -17,13 +16,9 @@
     })
   )
 
-  const filteredRepos = $derived(
-    selectedYear === 'all'
-      ? sortedRepos
-      : sortedRepos.filter((repo) =>
-          repo.metadata?.years?.includes(Number(selectedYear))
-        )
-  )
+  function getCardId(repo) {
+    return repo.cardId ?? repo.name
+  }
 
   if (browser) {
     document.documentElement.classList.add('js')
@@ -43,16 +38,17 @@
   // Expands the repository referenced by the current URL hash.
   function expandTargetFromHash() {
     const hash = window.location.hash.slice(1)
+    const targetRepo = repos.find((repo) => getCardId(repo) === hash)
 
-    if (hash && repos.find((repo) => repo.name === hash)) {
+    if (targetRepo) {
         runViewTransition(
           () => {
-            expandedRepo = hash
+            expandedRepo = targetRepo.name
           },
           'expand'
         )
 
-      const el = document.getElementById(hash)
+      const el = document.getElementById(getCardId(targetRepo))
       if (el) {
         el.scrollIntoView({
           behavior: 'smooth',
@@ -66,7 +62,7 @@
   }
 
   // Handles expanding, scrolling to, and linking the targeted repository
-  function handleTargetedRepo(repoName) {
+  function handleTargetedRepo(repoName, cardId) {
     const direction = expandedRepo === repoName ? 'collapse' : 'expand'
     const transition = runViewTransition(
       () => toggleExpansion(repoName),
@@ -75,30 +71,30 @@
 
     if (transition) {
       transition.finished.then(() => {
-        scrollToTarget(repoName)
-        syncTargetHash(repoName)
+        scrollToTarget(cardId)
+        syncTargetHash(repoName, cardId)
       })
     } else {
-      scrollToTarget(repoName)
-      syncTargetHash(repoName)
+      scrollToTarget(cardId)
+      syncTargetHash(repoName, cardId)
     }
 
   }
 
   // Keeps the URL hash in sync with the targeted repository.
-  function syncTargetHash(repoName) {
+  function syncTargetHash(repoName, cardId) {
     if (!browser) return
 
     const base = window.location.pathname + window.location.search
-    const href = expandedRepo === repoName ? `${base}#${repoName}` : base
+    const href = expandedRepo === repoName ? `${base}#${cardId}` : base
 
     // Overwrite current history entry instead of adding a new one
-    history.replaceState(history.state, '', href)
+    replaceState(href, history.state)
   }
 
   // Scrolls the page to the targeted repository card.
-  function scrollToTarget(repoName) {
-    const el = document.getElementById(repoName)
+  function scrollToTarget(cardId) {
+    const el = document.getElementById(cardId)
     if (!el) return
 
     const offset = 6 * 16
@@ -132,16 +128,15 @@
 <section id={id}>
   <header>
     <h2>{title}</h2>
-
-    <YearFilter bind:selectedYear />
   </header>
 
   <div>
-    {#each filteredRepos as repo (repo.name)}
+    {#each sortedRepos as repo (repo.name)}
       <RepoCard
         {repo}
         expanded={expandedRepo === repo.name}
-        onToggle={() => handleTargetedRepo(repo.name)}
+        cardId={getCardId(repo)}
+        onToggle={() => handleTargetedRepo(repo.name, getCardId(repo))}
       />
     {/each}
   </div>
@@ -181,12 +176,12 @@
     }
   }
 
-  :root[data-transition-direction='expand']::view-transition-group(*) {
+  :global(:root[data-transition-direction='expand']::view-transition-group(.repo-card)) {
     animation-duration: 300ms;
     animation-timing-function: ease-out;
   }
 
-  :root[data-transition-direction='collapse']::view-transition-group(*) {
+  :global(:root[data-transition-direction='collapse']::view-transition-group(.repo-card)) {
     animation-duration: 300ms;
     animation-timing-function: ease-in;
   }

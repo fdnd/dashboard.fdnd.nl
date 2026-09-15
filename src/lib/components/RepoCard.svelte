@@ -4,42 +4,18 @@
   import Arrow from '$lib/components/icons/Arrow.svelte'
   import { browser } from '$app/environment'
 
-  const { repo, expanded = false, onToggle } = $props()
+  const { repo, cardId = repo.name, expanded = false, onToggle } = $props()
 
   const hasMeta = $derived(
     !!repo.metadata && Object.keys(repo.metadata).length > 0
   )
 
-  const SPRINTS = {
-    8: { month: 3, day: 2, slug:'server-side-rendering-server-side-website', name:'Server-Side Website' },
-    9: { month: 3, day: 16, slug:'the-web-is-for-everyone-interactive-functionality', name:'The Web is for Everyone' },
-    10: { month: 4, day: 13, slug:'user-experience-enhanced-website', name:'User Experience' },
-    11: { month: 5, day: 11, slug:'pleasurable-ui', name:'Pleasurable UI' }
-  }
-
-  function isReleased(sprintNumber) {
-    const YEAR = 2026
-    const now = new Date()
-
-    const config = SPRINTS[sprintNumber]
-    const date = new Date(YEAR, config.month - 1, config.day)
-    return now.getTime() >= date.getTime()
-  }
-
-  function getSprintUrl(member, sprintNumber) {
-    const config = SPRINTS[sprintNumber]
-    return `https://github.com/${member.github}/${config.slug}`
-  }
-
-  function getSprintName(sprintNumber) {
-    return SPRINTS[sprintNumber].name
-  }
 </script>
 
 <article
-  id={repo.name}
+  id={cardId}
   class:expanded
-  style="view-transition-name: repo-{repo.name}"
+  style="view-transition-name: repo-{cardId}; view-transition-class: repo-card"
 >
   <header>
     <div>
@@ -60,7 +36,7 @@
   <div class="body">
     {#if repo.team?.members?.length}
       <div>
-        <h4>Team year 2</h4>
+        <h4>GitHub Team</h4>
         <ul>
           {#each repo.team.members as member (member.login)}
             <li>
@@ -149,46 +125,6 @@
           
         {/if}
 
-        {#if repo.metadata?.team && repo.metadata.team.length}
-        <div class="team-year-1">
-          <table>
-            <thead>
-              <tr>
-                <th>Team year 1</th>
-                {#each [8, 9, 10, 11] as sprint}
-                  <th>Sprint {sprint}</th>
-                {/each}
-              </tr>
-            </thead>
-            <tbody>
-              {#each repo.metadata.team as member}
-                <tr>
-                  <td>
-                    <a href="https://github.com/{member.github}" target="_blank" rel="noreferrer">{member.name} @{member.github}</a>
-                  </td>
-
-                  {#each [8, 9, 10, 11] as sprint}
-                    <td>
-                      {#if isReleased(sprint)}
-                        <a
-                          href={getSprintUrl(member, sprint)}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {getSprintName(sprint)} 
-                        </a>
-                      {:else}
-                        {getSprintName(sprint)}
-                      {/if}
-                    </td>
-                  {/each}
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-        </div>
-        {/if}
-
         {#if !browser}
           <a class="collapse" href="#all-projects">Hide details</a>
         {/if}
@@ -201,7 +137,7 @@
       <ul>
         <li>          
           <a
-            href="#{repo.name}"
+            href="#{cardId}"
             onclick={(e) => {
               e.preventDefault()
               onToggle()
@@ -430,27 +366,6 @@
                 @media (min-width:40rem) {
                   grid-column:auto;
                 }
-              }
-
-              &.team-year-1 {
-                border:none;
-                margin:0;
-                grid-column: 1 / -1;
-                overflow-x: hidden;
-                margin: 0 -1rem;
-                padding: 0 1rem;
-                width: calc(100% + 2rem);
-
-                @media (max-width:40rem) {
-                  table {
-                    display: block;
-                    overflow-x: auto;
-                    -webkit-overflow-scrolling: touch;
-                    scrollbar-color: var(--blue) var(--green);
-                    scrollbar-width: thin;
-                  }
-                }
-                
               }
 
               a {

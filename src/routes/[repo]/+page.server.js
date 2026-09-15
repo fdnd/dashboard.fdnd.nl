@@ -7,7 +7,7 @@ import {
   fetchRepoPullRequests
 } from '$lib/github'
 
-export const prerender = true
+export const prerender = false
 
 export async function load({ params }) {
   const org = GITHUB_ORGANIZATION
