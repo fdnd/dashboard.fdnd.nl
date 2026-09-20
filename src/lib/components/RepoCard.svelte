@@ -60,16 +60,20 @@
         <div>  
           <h4>Live sites</h4>
           <ul>
+          {#if repo.metadata.main_link !== ''}
             <li>
               <a href={repo.metadata.main_link}>
                 <code>main</code><ExternalLink size={12} />
               </a>
             </li>
+          {/if}
+          {#if repo.metadata.dev_link !== ''}
             <li>
               <a href={repo.metadata.dev_link}>
                 <code>dev</code><ExternalLink size={12} />
               </a>
             </li>
+          {/if}
           </ul>
         </div>
       {/if}
