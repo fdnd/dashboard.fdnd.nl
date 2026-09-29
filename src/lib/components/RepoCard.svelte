@@ -132,14 +132,14 @@
         {#if !browser}
           <a class="collapse" href="#all-projects">Hide details</a>
         {/if}
-      </div>
+    </div>
   </div>
 
   {#if hasMeta}
     <footer>
 
       <ul>
-        <li>          
+        <!-- <li>          
           <a
             href="#{cardId}"
             onclick={(e) => {
@@ -155,6 +155,19 @@
             
             <Arrow { expanded } />
           </a>
+        </li> -->
+        <li>
+          <a href="https://github.com/fdnd-agency/{repo.name}/wiki/Design-Challenge" target="_blank" rel="noreferrer">
+            Design challenge
+            <ExternalLink size={16} />
+          </a>
+        </li>
+    
+        <li>
+          <a href={`https://github.com/fdnd-agency/${repo.name}`} target="_blank" rel="noreferrer">
+            Codebase
+            <ExternalLink size={16} />
+          </a>
         </li>
         <li>
           <a href={`/${repo.name}`}>
@@ -162,12 +175,8 @@
             <View size={12} />
           </a>
         </li>
-        <li>
-          <a href={`https://github.com/fdnd-agency/${repo.name}`} target="_blank" rel="noreferrer">
-            GitHub repo
-            <ExternalLink size={16} />
-          </a>
-        </li>
+        
+        
       </ul>
     </footer>
   {/if}
@@ -296,7 +305,7 @@
 
     .body {
       display:grid;
-      grid-template-columns: 2fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr;
       gap:1rem;
       align-items: start;
       margin-bottom: 1rem;
