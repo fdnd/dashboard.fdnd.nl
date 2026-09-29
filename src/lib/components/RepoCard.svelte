@@ -156,6 +156,16 @@
             <Arrow { expanded } />
           </a>
         </li> -->
+        
+        {#each repo.metadata?.years ?? [] as year}
+        <li>
+          <a href="https://partners.fdnd.nl/projecten/planning{year == 1 ? '#planning-semester-1' : '#planning-semester-3'}" target="_blank" rel="noreferrer">
+            Planning
+            <ExternalLink size={16} />
+          </a>
+        </li>
+        {/each}
+          
         <li>
           <a href="https://github.com/fdnd-agency/{repo.name}/wiki/Design-Challenge" target="_blank" rel="noreferrer">
             Design challenge
@@ -165,7 +175,7 @@
     
         <li>
           <a href={`https://github.com/fdnd-agency/${repo.name}`} target="_blank" rel="noreferrer">
-            Codebase
+            Repository
             <ExternalLink size={16} />
           </a>
         </li>
